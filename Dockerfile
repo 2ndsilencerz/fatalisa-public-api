@@ -2,7 +2,7 @@ FROM golang:latest
 RUN mkdir /fatalisa-public-api
 COPY . /fatalisa-public-api
 WORKDIR /fatalisa-public-api
-RUN go build fatalisa-public-api
+RUN go build fatalisa-public-api && ls
 
 FROM alpine:latest
 
