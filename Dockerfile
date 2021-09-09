@@ -6,8 +6,9 @@ RUN go build fatalisa-public-api && ls
 
 FROM alpine:latest
 
-RUN mkdir /app && chmod -R +x /app
+RUN mkdir /app
 COPY --from=0 /fatalisa-public-api/fatalisa-public-api /app
+RUN chmod -R a+x /app
 WORKDIR /app
 ENV GIN_MODE release
 
