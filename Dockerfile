@@ -1,17 +1,15 @@
-FROM golang:latest
-RUN mkdir /fatalisa-public-api
+FROM golang:alpine
 COPY . /fatalisa-public-api
 WORKDIR /fatalisa-public-api
-RUN go build fatalisa-public-api && ls
+ENV GIN_MODE release
+RUN go build fatalisa-public-api
 
 FROM alpine:latest
 
-RUN mkdir /app
 COPY --from=0 /fatalisa-public-api/fatalisa-public-api /app
-RUN chmod -R a+x /app
-WORKDIR /app
+RUN chmod -R +x /app
 ENV GIN_MODE release
 
 EXPOSE 80
 
-ENTRYPOINT ["./fatalisa-public-api"]
+ENTRYPOINT ["./app"]
