@@ -26,6 +26,9 @@ func (router *Router) initRoutes() {
 }
 
 func (router *Router) initHealthRoute() {
+	router.R.GET("/", func(c *gin.Context) {
+		c.JSON(200, &utils.Body{Message: "Welcome"})
+	})
 	router.R.GET("/health", func(c *gin.Context) {
 		c.JSON(200, &utils.Body{Message: "pong"})
 	})
