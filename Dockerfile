@@ -12,4 +12,4 @@ WORKDIR /app
 
 EXPOSE 80
 
-ENTRYPOINT ["fatalisa-public-api"]
+ENTRYPOINT ["./fatalisa-public-api"]
