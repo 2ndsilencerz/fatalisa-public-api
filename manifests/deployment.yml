@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: "fatalisa-8cc1"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: "fatalisa-8cc1"
+  template:
+    metadata:
+      labels:
+        app: "fatalisa-8cc1"
+    spec:
+      containers:
+        - name: "fatalisa-8cc1"
+          image: "fatalisa.azurecr.io/fatalisa"
+          ports:
+          - containerPort: 80
