@@ -17,3 +17,9 @@ spec:
           image: "fatalisa.azurecr.io/fatalisa-public-api"
           ports:
           - containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            failureThreshold: 1
+            periodSeconds: 10
