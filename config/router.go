@@ -39,7 +39,7 @@ func (router *Router) Run() {
 	router.get()
 	router.initRoutes()
 	port := os.Getenv("PORT")
-	if port == "" {
+	if len(port) == 0 {
 		port = "80"
 	}
 	err := router.R.Run(":" + port)
