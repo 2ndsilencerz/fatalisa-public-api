@@ -31,3 +31,93 @@ spec:
           image: docker.io/silencerz23/fatalisa-public-api:latest
           ports:
             - containerPort: 80
+          env:
+            - name: TZ
+              value: Asia/Jakarta
+            - name: PORT
+              value: '80'
+            # MARIADB
+            - name: MARIADB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: fatalisa
+                  key: MARIADB_HOST
+            - name: MARIADB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: fatalisa
+                  key: MARIADB_USER
+            - name: MARIADB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: fatalisa
+                  key: MARIADB_PASS
+            - name: MARIADB_DATA
+              valueFrom:
+                secretKeyRef:
+                  name: fatalisa
+                  key: MARIADB_DATA
+            # POSTGRESQL
+            - name: POSTGRES_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: fatalisa
+                  key: POSTGRES_HOST
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: fatalisa
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: fatalisa
+                  key: POSTGRES_PASS
+            - name: POSTGRES_DATA
+              valueFrom:
+                secretKeyRef:
+                  name: fatalisa
+                  key: POSTGRES_DATA
+            # MONGODB
+            - name: MONGODB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: fatalisa
+                  key: MONGODB_HOST
+            - name: MONGODB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: fatalisa
+                  key: MONGODB_USER
+            - name: MONGODB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: fatalisa
+                  key: MONGODB_PASS
+            - name: MONGODB_DATA
+              valueFrom:
+                secretKeyRef:
+                  name: fatalisa
+                  key: MONGODB_DATA
+            # REDIS
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: fatalisa
+                  key: REDIS_HOST
+            - name: REDIS_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: fatalisa
+                  key: REDIS_PASS
+            # CONSUL
+            - name: CONSUL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: fatalisa
+                  key: CONSUL_HOST
+            - name: CONSUL_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: fatalisa
+                  key: CONSUL_PORT
