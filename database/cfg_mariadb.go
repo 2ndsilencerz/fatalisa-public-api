@@ -4,7 +4,6 @@ import (
 	"github.com/pieterclaerhout/go-log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	log2 "log"
 	"os"
 )
 
@@ -34,8 +33,7 @@ func InitMariaDB() *gorm.DB {
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Error(err)
-		log2.Println(err)
-		panic(err)
+		//panic(err)
 	}
 	return db
 }

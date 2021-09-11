@@ -12,7 +12,7 @@ func init() {
 	log.DebugSQLMode = true
 	log.PrintTimestamp = true
 	log.PrintColors = true
-	log.TimeFormat = "2006-01-02 15:04:05 -0700"
+	log.TimeFormat = "2006/01/02 15:04:05 -0700"
 }
 
 func init() {

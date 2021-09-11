@@ -4,7 +4,6 @@ import (
 	"github.com/pieterclaerhout/go-log"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	log2 "log"
 	"os"
 )
 
@@ -38,8 +37,7 @@ func InitPostgres() *gorm.DB {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Error(err)
-		log2.Println(err)
-		panic(err)
+		//panic(err)
 	}
 	return db
 }

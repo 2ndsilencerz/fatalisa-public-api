@@ -3,7 +3,6 @@ package database
 import (
 	"github.com/pieterclaerhout/go-log"
 	"gorm.io/gorm"
-	log2 "log"
 	"time"
 )
 
@@ -11,13 +10,11 @@ func Close(database *gorm.DB) {
 	db, err := database.DB()
 	if err != nil {
 		log.Error(err)
-		log2.Println(err)
 		panic(err)
 	}
 	err = db.Close()
 	if err != nil {
 		log.Error(err)
-		log2.Println(err)
 		panic(err)
 	}
 }
