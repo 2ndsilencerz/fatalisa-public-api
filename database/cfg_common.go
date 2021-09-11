@@ -3,6 +3,7 @@ package database
 import (
 	"github.com/pieterclaerhout/go-log"
 	"gorm.io/gorm"
+	log2 "log"
 	"time"
 )
 
@@ -10,22 +11,23 @@ func Close(database *gorm.DB) {
 	db, err := database.DB()
 	if err != nil {
 		log.Error(err)
+		log2.Println(err)
 		panic(err)
 	}
 	err = db.Close()
 	if err != nil {
 		log.Error(err)
+		log2.Println(err)
 		panic(err)
 	}
 }
 
 func DbConnCheck() {
 	for {
-		postgres := InitPostgres()
-		Close(postgres)
-		mariadb := InitMariaDB()
-		Close(mariadb)
-		sleepTime, err := time.ParseDuration("10s")
+		log.Info("Checking DB connection")
+		go checkPostgres()
+		go checkMariaDB()
+		sleepTime, err := time.ParseDuration("30s")
 		if err != nil {
 			log.Error(err)
 			errorLog := &ErrorLog{}
@@ -33,4 +35,14 @@ func DbConnCheck() {
 		}
 		time.Sleep(sleepTime)
 	}
+}
+
+func checkPostgres() {
+	postgres := InitPostgres()
+	Close(postgres)
+}
+
+func checkMariaDB() {
+	mariadb := InitMariaDB()
+	Close(mariadb)
 }

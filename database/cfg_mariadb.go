@@ -4,6 +4,7 @@ import (
 	"github.com/pieterclaerhout/go-log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	log2 "log"
 	"os"
 )
 
@@ -14,20 +15,26 @@ type MariaDBConf struct {
 	Data string `json:"data"`
 }
 
-func (conf MariaDBConf) get() {
+var mariaDbCfg *MariaDBConf
+
+func (conf MariaDBConf) Get() {
 	conf.Host = os.Getenv("MARIADB_HOST")
 	conf.User = os.Getenv("MARIADB_USER")
 	conf.Pass = os.Getenv("MARIADB_PASS")
 	conf.Data = os.Getenv("MARIADB_DATA")
 }
 
+func init() {
+	mariaDbCfg = &MariaDBConf{}
+	mariaDbCfg.Get()
+}
+
 func InitMariaDB() *gorm.DB {
-	cfg := &MariaDBConf{}
-	cfg.get()
-	dsn := cfg.User + ":" + cfg.Pass + "@tcp(" + cfg.Host + ":3306)/" + cfg.Data
+	dsn := mariaDbCfg.User + ":" + mariaDbCfg.Pass + "@tcp(" + mariaDbCfg.Host + ":3306)/" + mariaDbCfg.Data
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Error(err)
+		log2.Println(err)
 		panic(err)
 	}
 	return db
