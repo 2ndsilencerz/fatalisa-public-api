@@ -4,7 +4,8 @@ WORKDIR /fatalisa-public-api
 ENV GIN_MODE release
 EXPOSE 80
 RUN go build fatalisa-public-api
-ENTRYPOINT ["fatalisa-public-api"]
+chmod +x /fatalisa-public-api/fatalisa-public-api
+ENTRYPOINT ["/fatalisa-public-api/fatalisa-public-api"]
 
 #FROM alpine:latest
 
