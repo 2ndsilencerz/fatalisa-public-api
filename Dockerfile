@@ -3,7 +3,8 @@ COPY . /fatalisa-public-api
 WORKDIR /fatalisa-public-api
 ENV GIN_MODE release
 EXPOSE 80
-RUN go run fatalisa-public-api
+#RUN go run fatalisa-public-api
+ENTRYPOINT ["go", "run", "fatalisa-public-api"]
 
 #FROM alpine:latest
 
