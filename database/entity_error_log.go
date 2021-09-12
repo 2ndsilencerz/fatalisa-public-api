@@ -10,15 +10,17 @@ type ErrorLog struct {
 }
 
 func (errorLog ErrorLog) WriteToMariaDB() {
-	db := InitMariaDB()
-	db.Create(&errorLog)
-	Close(db)
+	if db := InitMariaDB(); db != nil {
+		db.Create(&errorLog)
+		Close(db)
+	}
 }
 
 func (errorLog ErrorLog) WriteToPostgres() {
-	db := InitPostgres()
-	db.Create(&errorLog)
-	Close(db)
+	if db := InitPostgres(); db != nil {
+		db.Create(&errorLog)
+		Close(db)
+	}
 }
 
 func (errorLog ErrorLog) Write(err error) {

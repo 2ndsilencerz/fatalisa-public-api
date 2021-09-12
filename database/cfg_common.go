@@ -1,45 +1,47 @@
 package database
 
 import (
+	"fmt"
 	"github.com/pieterclaerhout/go-log"
 	"gorm.io/gorm"
 	"time"
 )
 
+var HeaderGorm = fmt.Sprintf("%-8s", "gorm")
+
 func Close(database *gorm.DB) {
-	db, err := database.DB()
-	if err != nil {
-		log.Error(err)
+	if db, err := database.DB(); err != nil {
+		log.Error(HeaderGorm, "|", err)
 		//panic(err)
-	}
-	err = db.Close()
-	if err != nil {
-		log.Error(err)
-		//panic(err)
+	} else {
+		if err = db.Close(); err != nil {
+			log.Error(HeaderGorm, "|", err)
+			//panic(err)
+		}
 	}
 }
 
 func DbConnCheck() {
 	for {
-		log.Info("Checking DB connection")
+		log.Info(HeaderGorm, "|", "Checking DB connection")
 		go checkPostgres()
 		go checkMariaDB()
-		sleepTime, err := time.ParseDuration("30s")
-		if err != nil {
-			log.Error(err)
-			errorLog := &ErrorLog{}
-			errorLog.Write(err)
+		if sleepTime, err := time.ParseDuration("30s"); err != nil {
+			log.Error(HeaderGorm, "|", err)
+		} else {
+			time.Sleep(sleepTime)
 		}
-		time.Sleep(sleepTime)
 	}
 }
 
 func checkPostgres() {
-	postgres := InitPostgres()
-	Close(postgres)
+	if postgres := InitPostgres(); postgres != nil {
+		Close(postgres)
+	}
 }
 
 func checkMariaDB() {
-	mariadb := InitMariaDB()
-	Close(mariadb)
+	if mariadb := InitMariaDB(); mariadb != nil {
+		Close(mariadb)
+	}
 }

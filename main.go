@@ -3,7 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fatalisa-public-api/config"
+	"fatalisa-public-api/config/router"
 	"fatalisa-public-api/database"
+	"fatalisa-public-api/utils"
+	"fmt"
 	"github.com/pieterclaerhout/go-log"
 )
 
@@ -15,39 +18,44 @@ func init() {
 	log.TimeFormat = "2006/01/02 15:04:05 -0700"
 }
 
+var HeaderJSON = fmt.Sprintf("%-8s", "json")
+var headerCfg = fmt.Sprintf("%-8s", "svc-cfg")
+
 func init() {
 	cfg := &config.List{}
-	content, err := json.Marshal(cfg)
-	if err != nil {
-		log.Error(err)
+	if content, err := json.Marshal(cfg); err != nil {
+		log.Error(HeaderJSON, "|", err)
+	} else {
+		log.Info(headerCfg, "|", string(content))
 	}
-	log.Info(string(content))
 
 	cfgMariaDB := &database.MariaDBConf{}
 	cfgMariaDB.Get()
-	content, err = json.Marshal(cfgMariaDB)
-	if err != nil {
-		log.Error(err)
+	if content, err := json.Marshal(cfgMariaDB); err != nil {
+		log.Error(HeaderJSON, "|", err)
+	} else {
+		log.Info(headerCfg, "|", string(content))
 	}
-	log.Info(string(content))
 
 	cfgPostgres := &database.PostgresConf{}
 	cfgPostgres.Get()
-	content, err = json.Marshal(cfgPostgres)
-	if err != nil {
-		log.Error(err)
+	if content, err := json.Marshal(cfgPostgres); err != nil {
+		log.Error(HeaderJSON, "|", err)
+	} else {
+		log.Info(headerCfg, "|", string(content))
 	}
-	log.Info(string(content))
 }
 
 func init() {
 	// run DB connection check async
 	go database.DbConnCheck()
+	// run scheduled download for certain time
+	go utils.ScheduleDownload("1h")
 }
 
 func main() {
-	// any code after router.Run() won't be executed, place it in init() above
-	log.Info("Starting service")
-	router := &config.Router{}
-	router.Run()
+	// any code after routerInit.Run() won't be executed, place it in init() above
+	log.Info(router.HeaderGin, "|", "Starting service")
+	routerInit := &router.Router{}
+	routerInit.Run()
 }
