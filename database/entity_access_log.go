@@ -22,7 +22,7 @@ type AccessLog struct {
 	Created    int64     `gorm:"autoCreateTime,column:created" json:"created"`
 }
 
-func (accessLog AccessLog) WriteToMariaDB() {
+func (accessLog *AccessLog) WriteToMariaDB() {
 	if db := InitMariaDB(); db != nil {
 		if err := db.AutoMigrate(&accessLog); err != nil {
 			log.Error(HeaderGorm, "|", err)
@@ -32,7 +32,7 @@ func (accessLog AccessLog) WriteToMariaDB() {
 	}
 }
 
-func (accessLog AccessLog) WriteToPostgres() {
+func (accessLog *AccessLog) WriteToPostgres() {
 	if db := InitPostgres(); db != nil {
 		if err := db.AutoMigrate(&accessLog); err != nil {
 			log.Error(HeaderGorm, "|", err)
@@ -42,7 +42,12 @@ func (accessLog AccessLog) WriteToPostgres() {
 	}
 }
 
-func (accessLog AccessLog) WriteLog() {
+func (accessLog *AccessLog) WriteLog() {
+	uuidGenerated, err := uuid.NewV4()
+	if err != nil {
+		log.Error(HeaderGorm, "|", err)
+	}
+	accessLog.UUID = uuidGenerated
 	accessLog.WriteToMariaDB()
 	accessLog.WriteToPostgres()
 }

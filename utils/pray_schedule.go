@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"fatalisa-public-api/database"
 	"fmt"
+	"github.com/gofrs/uuid"
 	"github.com/pieterclaerhout/go-log"
 	"gorm.io/gorm"
 	"io"
@@ -138,6 +139,7 @@ type PrayScheduleReq struct {
 
 type PrayScheduleLog struct {
 	gorm.Model
+	UUID     uuid.UUID        `json:"uuid" gorm:"column:uuid"`
 	Request  PrayScheduleReq  `json:"request" gorm:"column:request"`
 	Response PrayScheduleData `json:"response" gorm:"column:response"`
 }
@@ -169,7 +171,12 @@ func GetSchedule(req *PrayScheduleReq) *PrayScheduleData {
 }
 
 func saveLogToDB(req PrayScheduleReq, res PrayScheduleData) {
+	uuidGenerated, err := uuid.NewV4()
+	if err != nil {
+		log.Error(HeaderPray, "|", err)
+	}
 	dbLog := &PrayScheduleLog{
+		UUID:     uuidGenerated,
 		Request:  req,
 		Response: res,
 	}
@@ -177,7 +184,7 @@ func saveLogToDB(req PrayScheduleReq, res PrayScheduleData) {
 	dbLog.WriteToMariaDB()
 }
 
-func (praySchedLog PrayScheduleLog) WriteToPostgres() {
+func (praySchedLog *PrayScheduleLog) WriteToPostgres() {
 	if db := database.InitMariaDB(); db != nil {
 		if err := db.AutoMigrate(&praySchedLog); err != nil {
 			log.Error(praySchedLog, "|", err)
@@ -187,7 +194,7 @@ func (praySchedLog PrayScheduleLog) WriteToPostgres() {
 	}
 }
 
-func (praySchedLog PrayScheduleLog) WriteToMariaDB() {
+func (praySchedLog *PrayScheduleLog) WriteToMariaDB() {
 	if db := database.InitPostgres(); db != nil {
 		if err := db.AutoMigrate(&praySchedLog); err != nil {
 			log.Error(praySchedLog, "|", err)

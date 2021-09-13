@@ -1,16 +1,18 @@
 package database
 
 import (
+	"github.com/gofrs/uuid"
 	"github.com/pieterclaerhout/go-log"
 	"time"
 )
 
 type ErrorLog struct {
+	UUID      uuid.UUID `json:"uuid"`
 	Message   string    `json:"message"`
 	Timestamp time.Time `json:"timestamp"`
 }
 
-func (errorLog ErrorLog) WriteToMariaDB() {
+func (errorLog *ErrorLog) WriteToMariaDB() {
 	if db := InitMariaDB(); db != nil {
 		if err := db.AutoMigrate(&errorLog); err != nil {
 			log.Error(HeaderGorm, "|", err)
@@ -20,7 +22,7 @@ func (errorLog ErrorLog) WriteToMariaDB() {
 	}
 }
 
-func (errorLog ErrorLog) WriteToPostgres() {
+func (errorLog *ErrorLog) WriteToPostgres() {
 	if db := InitPostgres(); db != nil {
 		if err := db.AutoMigrate(&errorLog); err != nil {
 			log.Error(HeaderGorm, "|", err)
@@ -30,9 +32,14 @@ func (errorLog ErrorLog) WriteToPostgres() {
 	}
 }
 
-func (errorLog ErrorLog) Write(err error) {
+func (errorLog *ErrorLog) Write(err error) {
 	errorLog.Message = err.Error()
 	errorLog.Timestamp = time.Now()
+	uuidGenerated, err := uuid.NewV4()
+	if err != nil {
+		log.Error(HeaderGorm, "|", err)
+	}
+	errorLog.UUID = uuidGenerated
 	errorLog.WriteToMariaDB()
 	errorLog.WriteToPostgres()
 }
