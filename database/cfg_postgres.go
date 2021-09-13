@@ -18,11 +18,11 @@ type PostgresConf struct {
 
 var postgresCfg *PostgresConf
 
-func (conf PostgresConf) Get() {
-	conf.Host = os.Getenv("POSTGRES_HOST")
-	conf.User = os.Getenv("POSTGRES_USER")
-	conf.Pass = os.Getenv("POSTGRES_PASS")
-	conf.Data = os.Getenv("POSTGRES_DATA")
+func (conf *PostgresConf) Get() {
+	conf.Host, _ = os.LookupEnv("POSTGRES_HOST")
+	conf.User, _ = os.LookupEnv("POSTGRES_USER")
+	conf.Pass, _ = os.LookupEnv("POSTGRES_PASS")
+	conf.Data, _ = os.LookupEnv("POSTGRES_DATA")
 }
 
 func init() {
@@ -36,6 +36,7 @@ func InitPostgres() *gorm.DB {
 		" password=" + postgresCfg.Pass +
 		" dbname=" + postgresCfg.Data +
 		" port=5432 TimeZone=Asia/Jakarta"
+	//log.Info(HeaderGorm, "|", dsn)
 	if db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	}); err != nil {

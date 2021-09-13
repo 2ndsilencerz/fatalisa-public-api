@@ -60,10 +60,11 @@ func (router *Router) Get() {
 func (router *Router) Run() {
 	router.Get()
 	router.InitRoutes()
-	port := os.Getenv("PORT")
-	if len(port) == 0 {
+	port, exist := os.LookupEnv("PORT")
+	if !exist {
 		port = "80"
 	}
+	log.Info(HeaderGin, "|", "Service running", port)
 	if err := router.R.Run(":" + port); err != nil {
 		log.Error(HeaderGin, "|", err)
 		panic(err)

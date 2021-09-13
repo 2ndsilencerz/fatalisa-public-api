@@ -18,11 +18,11 @@ type MariaDBConf struct {
 
 var mariaDbCfg *MariaDBConf
 
-func (conf MariaDBConf) Get() {
-	conf.Host = os.Getenv("MARIADB_HOST")
-	conf.User = os.Getenv("MARIADB_USER")
-	conf.Pass = os.Getenv("MARIADB_PASS")
-	conf.Data = os.Getenv("MARIADB_DATA")
+func (conf *MariaDBConf) Get() {
+	conf.Host, _ = os.LookupEnv("MARIADB_HOST")
+	conf.User, _ = os.LookupEnv("MARIADB_USER")
+	conf.Pass, _ = os.LookupEnv("MARIADB_PASS")
+	conf.Data, _ = os.LookupEnv("MARIADB_DATA")
 }
 
 func init() {
@@ -32,6 +32,7 @@ func init() {
 
 func InitMariaDB() *gorm.DB {
 	dsn := mariaDbCfg.User + ":" + mariaDbCfg.Pass + "@tcp(" + mariaDbCfg.Host + ":3306)/" + mariaDbCfg.Data
+	//log.Info(HeaderGorm, "|", dsn)
 	if db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	}); err != nil {

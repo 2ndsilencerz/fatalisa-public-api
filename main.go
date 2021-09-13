@@ -22,35 +22,26 @@ var HeaderJSON = fmt.Sprintf("%-8s", "json")
 var headerCfg = fmt.Sprintf("%-8s", "svc-cfg")
 
 func init() {
+	// run DB connection check async
+	go database.DbConnCheck()
+	// run scheduled download for certain time
+	go utils.ScheduleDownload("1h")
+}
+
+//func init() {
+//	for k, v := range os.Environ() {
+//		log.Info(k, v)
+//	}
+//}
+
+func init() {
 	cfg := &config.List{}
+	cfg.Get()
 	if content, err := json.Marshal(cfg); err != nil {
 		log.Error(HeaderJSON, "|", err)
 	} else {
 		log.Info(headerCfg, "|", string(content))
 	}
-
-	cfgMariaDB := &database.MariaDBConf{}
-	cfgMariaDB.Get()
-	if content, err := json.Marshal(cfgMariaDB); err != nil {
-		log.Error(HeaderJSON, "|", err)
-	} else {
-		log.Info(headerCfg, "|", string(content))
-	}
-
-	cfgPostgres := &database.PostgresConf{}
-	cfgPostgres.Get()
-	if content, err := json.Marshal(cfgPostgres); err != nil {
-		log.Error(HeaderJSON, "|", err)
-	} else {
-		log.Info(headerCfg, "|", string(content))
-	}
-}
-
-func init() {
-	// run DB connection check async
-	go database.DbConnCheck()
-	// run scheduled download for certain time
-	go utils.ScheduleDownload("1h")
 }
 
 func main() {

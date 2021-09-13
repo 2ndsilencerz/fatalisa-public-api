@@ -15,15 +15,15 @@ type List struct {
 	ConsulPort string `json:"consul_port"`
 }
 
-func (list List) Get() {
-	list.MongoDBHost = os.Getenv("MONGODB_HOST")
-	list.MongoDBUser = os.Getenv("MONGODB_USER")
-	list.MongoDBPass = os.Getenv("MONGODB_PASS")
-	list.MongoDBData = os.Getenv("MONGODB_DATA")
+func (list *List) Get() {
+	list.MongoDBHost, _ = os.LookupEnv("MONGODB_HOST")
+	list.MongoDBUser, _ = os.LookupEnv("MONGODB_USER")
+	list.MongoDBPass, _ = os.LookupEnv("MONGODB_PASS")
+	list.MongoDBData, _ = os.LookupEnv("MONGODB_DATA")
 
-	list.RedisHost = os.Getenv("REDIS_HOST")
-	list.RedisPass = os.Getenv("REDIS_PASS")
+	list.RedisHost, _ = os.LookupEnv("REDIS_HOST")
+	list.RedisPass, _ = os.LookupEnv("REDIS_PASS")
 
-	list.ConsulHost = os.Getenv("CONSUL_HOST")
-	list.ConsulPort = os.Getenv("CONSUL_PORT")
+	list.ConsulHost, _ = os.LookupEnv("CONSUL_HOST")
+	list.ConsulPort, _ = os.LookupEnv("CONSUL_PORT")
 }
