@@ -1,3 +1,5 @@
+name: Build and deploy cluster app to Azure Kubernetes Service - fatalisa-public-api
+
 on:
   push:
     branches: [ main ]
