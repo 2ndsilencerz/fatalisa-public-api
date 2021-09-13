@@ -2,6 +2,7 @@ package database
 
 import (
 	"github.com/gofrs/uuid"
+	"github.com/pieterclaerhout/go-log"
 	"gorm.io/gorm"
 )
 
@@ -23,6 +24,9 @@ type AccessLog struct {
 
 func (accessLog AccessLog) WriteToMariaDB() {
 	if db := InitMariaDB(); db != nil {
+		if err := db.AutoMigrate(&accessLog); err != nil {
+			log.Error(HeaderGorm, "|", err)
+		}
 		db.Create(&accessLog)
 		Close(db)
 	}
@@ -30,6 +34,9 @@ func (accessLog AccessLog) WriteToMariaDB() {
 
 func (accessLog AccessLog) WriteToPostgres() {
 	if db := InitPostgres(); db != nil {
+		if err := db.AutoMigrate(&accessLog); err != nil {
+			log.Error(HeaderGorm, "|", err)
+		}
 		db.Create(&accessLog)
 		Close(db)
 	}

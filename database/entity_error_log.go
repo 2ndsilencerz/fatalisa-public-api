@@ -1,6 +1,7 @@
 package database
 
 import (
+	"github.com/pieterclaerhout/go-log"
 	"time"
 )
 
@@ -11,6 +12,9 @@ type ErrorLog struct {
 
 func (errorLog ErrorLog) WriteToMariaDB() {
 	if db := InitMariaDB(); db != nil {
+		if err := db.AutoMigrate(&errorLog); err != nil {
+			log.Error(HeaderGorm, "|", err)
+		}
 		db.Create(&errorLog)
 		Close(db)
 	}
@@ -18,6 +22,9 @@ func (errorLog ErrorLog) WriteToMariaDB() {
 
 func (errorLog ErrorLog) WriteToPostgres() {
 	if db := InitPostgres(); db != nil {
+		if err := db.AutoMigrate(&errorLog); err != nil {
+			log.Error(HeaderGorm, "|", err)
+		}
 		db.Create(&errorLog)
 		Close(db)
 	}

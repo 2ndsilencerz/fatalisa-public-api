@@ -177,16 +177,22 @@ func saveLogToDB(req PrayScheduleReq, res PrayScheduleData) {
 	dbLog.WriteToMariaDB()
 }
 
-func (log PrayScheduleLog) WriteToPostgres() {
+func (praySchedLog PrayScheduleLog) WriteToPostgres() {
 	if db := database.InitMariaDB(); db != nil {
-		db.Create(&log)
+		if err := db.AutoMigrate(&praySchedLog); err != nil {
+			log.Error(praySchedLog, "|", err)
+		}
+		db.Create(&praySchedLog)
 		database.Close(db)
 	}
 }
 
-func (log PrayScheduleLog) WriteToMariaDB() {
+func (praySchedLog PrayScheduleLog) WriteToMariaDB() {
 	if db := database.InitPostgres(); db != nil {
-		db.Create(&log)
+		if err := db.AutoMigrate(&praySchedLog); err != nil {
+			log.Error(praySchedLog, "|", err)
+		}
+		db.Create(&praySchedLog)
 		database.Close(db)
 	}
 }
