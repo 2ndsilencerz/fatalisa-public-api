@@ -1,8 +1,10 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"github.com/pieterclaerhout/go-log"
+	"go.mongodb.org/mongo-driver/mongo"
 	"gorm.io/gorm"
 	"time"
 )
@@ -12,12 +14,19 @@ var HeaderGorm = fmt.Sprintf("%-8s", "gorm")
 func Close(database *gorm.DB) {
 	if db, err := database.DB(); err != nil {
 		log.Error(HeaderGorm, "|", err)
-		//panic(err)
+		panic(err)
 	} else {
 		if err = db.Close(); err != nil {
 			log.Error(HeaderGorm, "|", err)
-			//panic(err)
+			panic(err)
 		}
+	}
+}
+
+func CloseMongo(database *mongo.Client, ctx context.Context) {
+	if err := database.Disconnect(ctx); err != nil {
+		log.Error(HeaderMongoDB, "|", err)
+		panic(err)
 	}
 }
 
@@ -26,6 +35,7 @@ func DbConnCheck() {
 		log.Info(HeaderGorm, "|", "Checking DB connection")
 		go checkPostgres()
 		go checkMariaDB()
+		go checkMongoDB()
 		if sleepTime, err := time.ParseDuration("30s"); err != nil {
 			log.Error(HeaderGorm, "|", err)
 		} else {
@@ -43,5 +53,11 @@ func checkPostgres() {
 func checkMariaDB() {
 	if mariadb := InitMariaDB(); mariadb != nil {
 		Close(mariadb)
+	}
+}
+
+func checkMongoDB() {
+	if mongodb, ctx, _ := InitMongoDB(); mongodb != nil {
+		CloseMongo(mongodb, ctx)
 	}
 }

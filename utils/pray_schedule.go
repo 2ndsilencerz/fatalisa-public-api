@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/gofrs/uuid"
 	"github.com/pieterclaerhout/go-log"
+	"go.mongodb.org/mongo-driver/bson"
 	"gorm.io/gorm"
 	"io"
 	"io/ioutil"
@@ -139,9 +140,9 @@ type PrayScheduleReq struct {
 
 type PrayScheduleLog struct {
 	gorm.Model
-	UUID     uuid.UUID        `json:"uuid" gorm:"column:uuid"`
-	Request  PrayScheduleReq  `json:"request" gorm:"column:request"`
-	Response PrayScheduleData `json:"response" gorm:"column:response"`
+	UUID     uuid.UUID        `json:"uuid" gorm:"column:uuid" bson:"uuid"`
+	Request  PrayScheduleReq  `json:"request" gorm:"column:request" bson:"request"`
+	Response PrayScheduleData `json:"response" gorm:"column:response" bson:"response"`
 }
 
 func GetSchedule(req *PrayScheduleReq) *PrayScheduleData {
@@ -182,24 +183,39 @@ func saveLogToDB(req PrayScheduleReq, res PrayScheduleData) {
 	}
 	dbLog.WriteToPostgres()
 	dbLog.WriteToMariaDB()
+	dbLog.WriteToMongoDB()
 }
 
 func (praySchedLog *PrayScheduleLog) WriteToPostgres() {
 	if db := database.InitMariaDB(); db != nil {
+		defer database.Close(db)
 		if err := db.AutoMigrate(&praySchedLog); err != nil {
 			log.Error(praySchedLog, "|", err)
 		}
 		db.Create(&praySchedLog)
-		database.Close(db)
 	}
 }
 
 func (praySchedLog *PrayScheduleLog) WriteToMariaDB() {
 	if db := database.InitPostgres(); db != nil {
+		defer database.Close(db)
 		if err := db.AutoMigrate(&praySchedLog); err != nil {
 			log.Error(praySchedLog, "|", err)
 		}
 		db.Create(&praySchedLog)
-		database.Close(db)
+	}
+}
+
+func (praySchedLog *PrayScheduleLog) WriteToMongoDB() {
+	if db, ctx, conf := database.InitMongoDB(); db != nil {
+		defer database.CloseMongo(db, ctx)
+		accessLogCol := db.Database(conf.Data).Collection(HeaderPray)
+		if bsonData, err := bson.Marshal(&praySchedLog); err != nil {
+			log.Error(database.HeaderMongoDB, "|", err)
+		} else {
+			if _, err := accessLogCol.InsertOne(ctx, bsonData); err != nil {
+				log.Error(database.HeaderMongoDB, "|", err)
+			}
+		}
 	}
 }

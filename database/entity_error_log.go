@@ -7,9 +7,9 @@ import (
 )
 
 type ErrorLog struct {
-	UUID      uuid.UUID `json:"uuid"`
-	Message   string    `json:"message"`
-	Timestamp time.Time `json:"timestamp"`
+	UUID      uuid.UUID `json:"uuid" bson:"uuid"`
+	Message   string    `json:"message" bson:"message"`
+	Timestamp time.Time `json:"timestamp" bson:"timestamp"`
 }
 
 func (errorLog *ErrorLog) WriteToMariaDB() {
