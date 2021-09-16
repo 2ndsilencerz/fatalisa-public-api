@@ -1,4 +1,4 @@
-name: Build and deploy cluster app to Azure Kubernetes Service - fatalisa-public-api
+name: Build and deploy cluster app to Azure Kubernetes Service
 
 on:
   push:
