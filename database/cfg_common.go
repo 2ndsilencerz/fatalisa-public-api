@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"github.com/pieterclaerhout/go-log"
 	"go.mongodb.org/mongo-driver/mongo"
 	"gorm.io/gorm"
@@ -26,6 +27,13 @@ func Close(database *gorm.DB) {
 func CloseMongo(database *mongo.Client, ctx context.Context) {
 	if err := database.Disconnect(ctx); err != nil {
 		log.Error(HeaderMongoDB, "|", err)
+		panic(err)
+	}
+}
+
+func CloseRedis(client *redis.Client) {
+	if err := client.Close(); err != nil {
+		log.Error(HeaderRedis, "|", err)
 		panic(err)
 	}
 }

@@ -38,7 +38,7 @@ func TestGetSchedule(t *testing.T) {
 		if err != nil {
 			log.Error(err)
 		} else {
-			routerTest.R.ServeHTTP(httpRes, httpReq)
+			routerTest.Gin.ServeHTTP(httpRes, httpReq)
 
 			dataRes := &utils.PrayScheduleData{}
 			if rawRes, err := ioutil.ReadAll(httpRes.Body); err != nil {

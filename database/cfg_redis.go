@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"github.com/go-redis/redis/v8"
 	"os"
 )
@@ -11,7 +12,7 @@ type RedisConf struct {
 }
 
 var redisCfg *RedisConf
-var HeaderRedis = "redis"
+var HeaderRedis = fmt.Sprintf("%-8s", "redis")
 
 func (conf *RedisConf) Get() {
 	conf.Host, _ = os.LookupEnv("REDIS_HOST")

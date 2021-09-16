@@ -2,6 +2,8 @@ package utils
 
 import (
 	"bytes"
+	"context"
+	"encoding/json"
 	"encoding/xml"
 	"fatalisa-public-api/database"
 	"fmt"
@@ -140,9 +142,9 @@ type PrayScheduleReq struct {
 
 type PrayScheduleLog struct {
 	gorm.Model
-	UUID     uuid.UUID        `json:"uuid" gorm:"column:uuid" bson:"uuid"`
-	Request  PrayScheduleReq  `json:"request" gorm:"column:request" bson:"request"`
-	Response PrayScheduleData `json:"response" gorm:"column:response" bson:"response"`
+	UUID             uuid.UUID `json:"uuid" gorm:"column:uuid" bson:"uuid"`
+	PrayScheduleReq  `json:"request" gorm:"column:request" bson:"request"`
+	PrayScheduleData `json:"response" gorm:"column:response" bson:"response"`
 }
 
 func GetSchedule(req *PrayScheduleReq) *PrayScheduleData {
@@ -177,13 +179,12 @@ func saveLogToDB(req PrayScheduleReq, res PrayScheduleData) {
 		log.Error(HeaderPray, "|", err)
 	}
 	dbLog := &PrayScheduleLog{
-		UUID:     uuidGenerated,
-		Request:  req,
-		Response: res,
+		UUID:             uuidGenerated,
+		PrayScheduleReq:  req,
+		PrayScheduleData: res,
 	}
-	dbLog.WriteToPostgres()
-	dbLog.WriteToMariaDB()
-	dbLog.WriteToMongoDB()
+	//dbLog.WriteToLog()
+	dbLog.PutToRedisQueue()
 }
 
 func (praySchedLog *PrayScheduleLog) WriteToPostgres() {
@@ -216,6 +217,44 @@ func (praySchedLog *PrayScheduleLog) WriteToMongoDB() {
 			if _, err := accessLogCol.InsertOne(ctx, bsonData); err != nil {
 				log.Error(database.HeaderMongoDB, "|", err)
 			}
+		}
+	}
+}
+
+func (praySchedLog *PrayScheduleLog) WriteToLog() {
+	praySchedLog.WriteToMariaDB()
+	praySchedLog.WriteToPostgres()
+	praySchedLog.WriteToMongoDB()
+}
+
+func (praySchedLog *PrayScheduleLog) GetFromRedis() {
+	if rdb := database.InitRedis(); rdb != nil {
+		defer database.CloseRedis(rdb)
+		for {
+			ctx := context.Background()
+			rawString := rdb.RPop(ctx, HeaderPray).Val()
+			if len(rawString) > 0 {
+				praySchedLog = &PrayScheduleLog{}
+				if err := json.Unmarshal([]byte(rawString), praySchedLog); err != nil {
+					log.Error(HeaderPray, "|", err)
+				} else {
+					praySchedLog.WriteToLog()
+				}
+			}
+			sleepTime, _ := time.ParseDuration("1s")
+			time.Sleep(sleepTime)
+		}
+	}
+}
+
+func (praySchedLog *PrayScheduleLog) PutToRedisQueue() {
+	if rawString, err := json.Marshal(praySchedLog); err != nil {
+		log.Error(HeaderPray, "|", err)
+	} else if rdb := database.InitRedis(); rdb != nil {
+		defer database.CloseRedis(rdb)
+		ctx := context.Background()
+		if errorPush := rdb.LPush(ctx, HeaderPray, string(rawString)).Err(); errorPush != nil {
+			log.Error(database.HeaderRedis, "|", errorPush)
 		}
 	}
 }

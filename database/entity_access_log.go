@@ -1,10 +1,13 @@
 package database
 
 import (
+	"context"
+	"encoding/json"
 	"github.com/gofrs/uuid"
 	"github.com/pieterclaerhout/go-log"
 	"go.mongodb.org/mongo-driver/bson"
 	"gorm.io/gorm"
+	"time"
 )
 
 /*
@@ -68,6 +71,38 @@ func (accessLog *AccessLog) WriteLog() {
 	accessLog.WriteToMariaDB()
 	accessLog.WriteToPostgres()
 	accessLog.WriteToMongoDB()
+}
+
+func (accessLog *AccessLog) GetFromRedis() {
+	if rdb := InitRedis(); rdb != nil {
+		defer CloseRedis(rdb)
+		for {
+			ctx := context.Background()
+			rawString := rdb.RPop(ctx, AccessLogKey).Val()
+			if len(rawString) > 0 {
+				accessLog = &AccessLog{}
+				if err := json.Unmarshal([]byte(rawString), accessLog); err != nil {
+					log.Error(AccessLogKey, "|", err)
+				} else {
+					accessLog.WriteLog()
+				}
+			}
+			sleepTime, _ := time.ParseDuration("1s")
+			time.Sleep(sleepTime)
+		}
+	}
+}
+
+func (accessLog *AccessLog) PutToRedisQueue() {
+	if rawString, err := json.Marshal(accessLog); err != nil {
+		log.Error(AccessLogKey, "|", err)
+	} else if rdb := InitRedis(); rdb != nil {
+		defer CloseRedis(rdb)
+		ctx := context.Background()
+		if errorPush := rdb.LPush(ctx, AccessLogKey, string(rawString)).Err(); errorPush != nil {
+			log.Error(HeaderRedis, "|", errorPush)
+		}
+	}
 }
 
 //func (accessLog *AccessLog) InitSubscriber() *redis.PubSub {

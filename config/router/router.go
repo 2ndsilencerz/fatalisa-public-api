@@ -10,7 +10,7 @@ import (
 )
 
 type Router struct {
-	R *gin.Engine
+	Gin *gin.Engine
 }
 
 var HeaderGin = fmt.Sprintf("%-8s", "gin")
@@ -38,7 +38,8 @@ func saveLogToDB(kind string, ctxCopy *gin.Context) {
 	if kind == "Response" {
 		accessLog.StatusCode = ctxCopy.Writer.Status()
 	}
-	accessLog.WriteLog()
+	//accessLog.WriteLog()
+	accessLog.PutToRedisQueue()
 }
 
 func ginCustomLogger(c *gin.Context) {
@@ -52,8 +53,8 @@ func ginLogHandler() gin.HandlerFunc {
 }
 
 func (router *Router) Get() {
-	router.R = gin.New()
-	router.R.Use(ginLogHandler())
+	router.Gin = gin.New()
+	router.Gin.Use(ginLogHandler())
 	gin.ForceConsoleColor()
 }
 
@@ -65,7 +66,7 @@ func (router *Router) Run() {
 		port = "80"
 	}
 	log.Info(HeaderGin, "|", "Service running", port)
-	if err := router.R.Run(":" + port); err != nil {
+	if err := router.Gin.Run(":" + port); err != nil {
 		log.Error(HeaderGin, "|", err)
 		panic(err)
 	}
@@ -77,17 +78,17 @@ func (router *Router) InitRoutes() {
 }
 
 func (router *Router) initHealthRoute() {
-	router.R.GET("/", func(c *gin.Context) {
+	router.Gin.GET("/", func(c *gin.Context) {
 		//c.JSON(200, &utils.PostData{Kind: "Welcome"})
 		c.SecureJSON(200, &utils.Body{Message: "Welcome"})
 	})
-	router.R.GET("/health", func(c *gin.Context) {
+	router.Gin.GET("/health", func(c *gin.Context) {
 		c.SecureJSON(200, &utils.Body{Message: "pong"})
 	})
 }
 
 func (router *Router) initApis() {
-	api := router.R.Group("/api")
+	api := router.Gin.Group("/api")
 	{
 		api.GET("/datetime", func(c *gin.Context) {
 			response := utils.DatetimeApi()

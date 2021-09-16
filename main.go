@@ -8,8 +8,17 @@ import (
 	"fatalisa-public-api/utils"
 	"fmt"
 	"github.com/pieterclaerhout/go-log"
+	"os"
 )
 
+// print BUILD_DATE if exist
+func init() {
+	if buildDate, exist := os.LookupEnv("BUILD_DATE"); exist && len(buildDate) > 0 {
+		log.Info("This image built in", buildDate)
+	}
+}
+
+// set logger format
 func init() {
 	log.DebugMode = true
 	log.DebugSQLMode = true
@@ -21,6 +30,7 @@ func init() {
 var HeaderJSON = fmt.Sprintf("%-8s", "json")
 var headerCfg = fmt.Sprintf("%-8s", "svc-cfg")
 
+// run scheduled DB check on another routine
 func init() {
 	// run DB connection check async
 	go database.DbConnCheck()
@@ -28,12 +38,16 @@ func init() {
 	go utils.ScheduleDownload("1h")
 }
 
-//func init() {
-//	for k, v := range os.Environ() {
-//		log.Info(k, v)
-//	}
-//}
+// run redis queue checker per entity
+func init() {
+	accessLog := &database.AccessLog{}
+	go accessLog.GetFromRedis()
 
+	praySchedLog := &utils.PrayScheduleLog{}
+	go praySchedLog.GetFromRedis()
+}
+
+// print config list
 func init() {
 	cfg := &config.List{}
 	cfg.Get()
