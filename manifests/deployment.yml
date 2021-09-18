@@ -113,3 +113,13 @@ spec:
               port: 80
             failureThreshold: 1
             periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 80
+#            httpGet:
+#              path: /health
+#              port: 80
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 80

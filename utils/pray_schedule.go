@@ -26,11 +26,11 @@ func ScheduleDownload(duration string, waitGroup *sync.WaitGroup) {
 		waitGroup.Add(1)
 		log.Info(HeaderPray, "|", "Downloading pray schedule")
 		downloadFile()
+		waitGroup.Done()
 		sleepTime, err := time.ParseDuration(duration)
 		if err != nil {
 			log.Error(HeaderPray, "|", err)
 		}
-		waitGroup.Done()
 		time.Sleep(sleepTime)
 	}
 }
