@@ -93,6 +93,10 @@ func DownloadFile(x int) {
 		if _, errWriteFile := io.Copy(file, body); errWriteFile != nil {
 			log.Error(HeaderPray, "|", errWriteFile)
 		}
+		errOwnFile := file.Chown(0, 0)
+		if errOwnFile != nil {
+			log.Error(HeaderPray, "|", errOwnFile)
+		}
 		errCloseFile := file.Close()
 		if errCloseFile != nil {
 			log.Error(HeaderPray, "|", errCloseFile)
