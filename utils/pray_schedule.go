@@ -15,19 +15,22 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 )
 
 var HeaderPray = fmt.Sprintf("%-8s", "pray-sch")
 
-func ScheduleDownload(duration string) {
+func ScheduleDownload(duration string, waitGroup *sync.WaitGroup) {
 	for {
+		waitGroup.Add(1)
 		log.Info(HeaderPray, "|", "Downloading pray schedule")
 		downloadFile()
 		sleepTime, err := time.ParseDuration(duration)
 		if err != nil {
 			log.Error(HeaderPray, "|", err)
 		}
+		waitGroup.Done()
 		time.Sleep(sleepTime)
 	}
 }
@@ -148,7 +151,7 @@ type PrayScheduleLog struct {
 }
 
 func GetSchedule(req *PrayScheduleReq) *PrayScheduleData {
-	var responseData *PrayScheduleData
+	responseData := &PrayScheduleData{}
 	if file, errRead := ioutil.ReadFile("jadwal.xml"); errRead != nil {
 		log.Error(HeaderPray, "|", errRead)
 	} else {
@@ -184,7 +187,7 @@ func saveLogToDB(req PrayScheduleReq, res PrayScheduleData) {
 		PrayScheduleData: res,
 	}
 	//dbLog.WriteToLog()
-	dbLog.PutToRedisQueue()
+	database.PutToRedisQueue(dbLog, HeaderPray)
 }
 
 func (praySchedLog *PrayScheduleLog) WriteToPostgres() {
@@ -243,18 +246,6 @@ func (praySchedLog *PrayScheduleLog) GetFromRedis() {
 			}
 			sleepTime, _ := time.ParseDuration("1s")
 			time.Sleep(sleepTime)
-		}
-	}
-}
-
-func (praySchedLog *PrayScheduleLog) PutToRedisQueue() {
-	if rawString, err := json.Marshal(praySchedLog); err != nil {
-		log.Error(HeaderPray, "|", err)
-	} else if rdb := database.InitRedis(); rdb != nil {
-		defer database.CloseRedis(rdb)
-		ctx := context.Background()
-		if errorPush := rdb.LPush(ctx, HeaderPray, string(rawString)).Err(); errorPush != nil {
-			log.Error(database.HeaderRedis, "|", errorPush)
 		}
 	}
 }

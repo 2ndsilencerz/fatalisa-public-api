@@ -9,7 +9,11 @@ import (
 	"fmt"
 	"github.com/pieterclaerhout/go-log"
 	"os"
+	"sync"
 )
+
+var headerCfg = fmt.Sprintf("%-8s", "svc-cfg")
+var MainWaitGroup = sync.WaitGroup{}
 
 // print BUILD_DATE if exist
 func init() {
@@ -27,15 +31,13 @@ func init() {
 	log.TimeFormat = "2006/01/02 15:04:05 -0700"
 }
 
-var HeaderJSON = fmt.Sprintf("%-8s", "json")
-var headerCfg = fmt.Sprintf("%-8s", "svc-cfg")
-
 // run scheduled DB check on another routine
 func init() {
 	// run DB connection check async
 	go database.DbConnCheck()
 	// run scheduled download for certain time
-	go utils.ScheduleDownload("1h")
+	// please disable this when doing test
+	go utils.ScheduleDownload("1h", &MainWaitGroup)
 }
 
 // run redis queue checker per entity
@@ -52,7 +54,7 @@ func init() {
 	cfg := &config.List{}
 	cfg.Get()
 	if content, err := json.Marshal(cfg); err != nil {
-		log.Error(HeaderJSON, "|", err)
+		log.Error(headerCfg, "|", err)
 	} else {
 		log.Info(headerCfg, "|", string(content))
 	}

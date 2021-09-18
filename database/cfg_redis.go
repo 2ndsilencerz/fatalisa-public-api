@@ -1,8 +1,11 @@
 package database
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	"github.com/pieterclaerhout/go-log"
 	"os"
 )
 
@@ -31,4 +34,16 @@ func InitRedis() *redis.Client {
 		DB:       0,
 	})
 	return rdb
+}
+
+func PutToRedisQueue(v interface{}, key string) {
+	if rawString, err := json.Marshal(v); err != nil {
+		log.Error(key, "|", err)
+	} else if rdb := InitRedis(); rdb != nil {
+		defer CloseRedis(rdb)
+		ctx := context.Background()
+		if errorPush := rdb.LPush(ctx, key, string(rawString)).Err(); errorPush != nil {
+			log.Error(HeaderRedis, "|", errorPush)
+		}
+	}
 }

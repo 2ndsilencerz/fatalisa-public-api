@@ -3,6 +3,7 @@ package router
 import (
 	"fatalisa-public-api/database"
 	"fatalisa-public-api/utils"
+	"fatalisa-public-api/utils/qris"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/pieterclaerhout/go-log"
@@ -25,7 +26,7 @@ func loggerTask(kind string, c *gin.Context) {
 	}
 	clientIP := fmt.Sprintf("%s", c.ClientIP())
 	log.Info(HeaderGin, "|", kind, clientIP, reqMethod, reqUri, statusCode)
-	saveLogToDB(kind, c)
+	go saveLogToDB(kind, c)
 }
 
 func saveLogToDB(kind string, ctxCopy *gin.Context) {
@@ -39,7 +40,7 @@ func saveLogToDB(kind string, ctxCopy *gin.Context) {
 		accessLog.StatusCode = ctxCopy.Writer.Status()
 	}
 	//accessLog.WriteLog()
-	accessLog.PutToRedisQueue()
+	database.PutToRedisQueue(&accessLog, database.AccessLogKey)
 }
 
 func ginCustomLogger(c *gin.Context) {
@@ -103,5 +104,34 @@ func (router *Router) initApis() {
 				c.SecureJSON(200, &response)
 			}
 		})
+		qrisGroup := api.Group("/qris")
+		{
+			qrisGroup.GET("/mpm/:raw", func(c *gin.Context) {
+				raw := c.Param("raw")
+				result := qris.MpmData{}
+				result.GetData(raw)
+				c.SecureJSON(200, &result)
+			})
+			qrisGroup.POST("/mpm", func(c *gin.Context) {
+				mpmReq := &qris.MpmRequest{}
+				if err := c.BindJSON(mpmReq); err != nil {
+					log.Error(qris.HeaderMpm, "|", err)
+				} else {
+					result := qris.MpmData{}
+					result.GetData(mpmReq.Raw)
+					c.SecureJSON(200, &result)
+				}
+			})
+			qrisGroup.POST("/cpm", func(c *gin.Context) {
+				cpmReq := &qris.CpmRequest{}
+				if err := c.BindJSON(cpmReq); err != nil {
+					log.Error(qris.HeaderCpm, "|", err)
+				} else {
+					result := qris.CpmData{}
+					result.GetData(cpmReq.Raw)
+					c.SecureJSON(200, &result)
+				}
+			})
+		}
 	}
 }

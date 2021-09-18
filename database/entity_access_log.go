@@ -93,18 +93,6 @@ func (accessLog *AccessLog) GetFromRedis() {
 	}
 }
 
-func (accessLog *AccessLog) PutToRedisQueue() {
-	if rawString, err := json.Marshal(accessLog); err != nil {
-		log.Error(AccessLogKey, "|", err)
-	} else if rdb := InitRedis(); rdb != nil {
-		defer CloseRedis(rdb)
-		ctx := context.Background()
-		if errorPush := rdb.LPush(ctx, AccessLogKey, string(rawString)).Err(); errorPush != nil {
-			log.Error(HeaderRedis, "|", errorPush)
-		}
-	}
-}
-
 //func (accessLog *AccessLog) InitSubscriber() *redis.PubSub {
 //	ctx := context.Background()
 //	rdb := InitRedis()
