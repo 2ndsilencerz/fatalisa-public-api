@@ -1,4 +1,4 @@
-package database
+package config
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 
 var HeaderGorm = fmt.Sprintf("%-8s", "gorm")
 
-func Close(database *gorm.DB) {
+func CloseGorm(database *gorm.DB) {
 	if db, err := database.DB(); err != nil {
 		log.Error(HeaderGorm, "|", err)
 		panic(err)
@@ -54,13 +54,13 @@ func DbConnCheck() {
 
 func checkPostgres() {
 	if postgres := InitPostgres(); postgres != nil {
-		Close(postgres)
+		CloseGorm(postgres)
 	}
 }
 
 func checkMariaDB() {
 	if mariadb := InitMariaDB(); mariadb != nil {
-		Close(mariadb)
+		CloseGorm(mariadb)
 	}
 }
 

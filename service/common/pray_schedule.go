@@ -1,11 +1,11 @@
-package utils
+package common
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
 	"encoding/xml"
-	"fatalisa-public-api/database"
+	"fatalisa-public-api/database/config"
 	"fmt"
 	"github.com/gofrs/uuid"
 	"github.com/pieterclaerhout/go-log"
@@ -15,18 +15,15 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"sync"
 	"time"
 )
 
 var HeaderPray = fmt.Sprintf("%-8s", "pray-sch")
 
-func ScheduleDownload(duration string, waitGroup *sync.WaitGroup) {
+func PraySchedDownload(duration string) {
 	for {
-		waitGroup.Add(1)
 		log.Info(HeaderPray, "|", "Downloading pray schedule")
-		downloadFile()
-		waitGroup.Done()
+		DownloadFile()
 		sleepTime, err := time.ParseDuration(duration)
 		if err != nil {
 			log.Error(HeaderPray, "|", err)
@@ -35,7 +32,7 @@ func ScheduleDownload(duration string, waitGroup *sync.WaitGroup) {
 	}
 }
 
-func downloadFile() {
+func DownloadFile() {
 	fileName := "jadwal.xml"
 	file, errFileCreate := os.Create(fileName)
 	if errFileCreate != nil {
@@ -187,12 +184,12 @@ func saveLogToDB(req PrayScheduleReq, res PrayScheduleData) {
 		PrayScheduleData: res,
 	}
 	//dbLog.WriteToLog()
-	database.PutToRedisQueue(dbLog, HeaderPray)
+	config.PutToRedisQueue(dbLog, HeaderPray)
 }
 
 func (praySchedLog *PrayScheduleLog) WriteToPostgres() {
-	if db := database.InitMariaDB(); db != nil {
-		defer database.Close(db)
+	if db := config.InitMariaDB(); db != nil {
+		defer config.CloseGorm(db)
 		if err := db.AutoMigrate(&praySchedLog); err != nil {
 			log.Error(praySchedLog, "|", err)
 		}
@@ -201,8 +198,8 @@ func (praySchedLog *PrayScheduleLog) WriteToPostgres() {
 }
 
 func (praySchedLog *PrayScheduleLog) WriteToMariaDB() {
-	if db := database.InitPostgres(); db != nil {
-		defer database.Close(db)
+	if db := config.InitPostgres(); db != nil {
+		defer config.CloseGorm(db)
 		if err := db.AutoMigrate(&praySchedLog); err != nil {
 			log.Error(praySchedLog, "|", err)
 		}
@@ -211,14 +208,14 @@ func (praySchedLog *PrayScheduleLog) WriteToMariaDB() {
 }
 
 func (praySchedLog *PrayScheduleLog) WriteToMongoDB() {
-	if db, ctx, conf := database.InitMongoDB(); db != nil {
-		defer database.CloseMongo(db, ctx)
+	if db, ctx, conf := config.InitMongoDB(); db != nil {
+		defer config.CloseMongo(db, ctx)
 		accessLogCol := db.Database(conf.Data).Collection(HeaderPray)
 		if bsonData, err := bson.Marshal(&praySchedLog); err != nil {
-			log.Error(database.HeaderMongoDB, "|", err)
+			log.Error(config.HeaderMongoDB, "|", err)
 		} else {
 			if _, err := accessLogCol.InsertOne(ctx, bsonData); err != nil {
-				log.Error(database.HeaderMongoDB, "|", err)
+				log.Error(config.HeaderMongoDB, "|", err)
 			}
 		}
 	}
@@ -231,8 +228,8 @@ func (praySchedLog *PrayScheduleLog) WriteToLog() {
 }
 
 func (praySchedLog *PrayScheduleLog) GetFromRedis() {
-	if rdb := database.InitRedis(); rdb != nil {
-		defer database.CloseRedis(rdb)
+	if rdb := config.InitRedis(); rdb != nil {
+		defer config.CloseRedis(rdb)
 		for {
 			ctx := context.Background()
 			rawString := rdb.RPop(ctx, HeaderPray).Val()

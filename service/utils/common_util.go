@@ -1,4 +1,4 @@
-package qris
+package utils
 
 import (
 	"fmt"

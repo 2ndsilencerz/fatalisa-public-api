@@ -1,16 +1,17 @@
 package router
 
 import (
-	"fatalisa-public-api/database"
-	"fatalisa-public-api/utils"
-	"fatalisa-public-api/utils/qris"
+	"fatalisa-public-api/database/config"
+	"fatalisa-public-api/database/entity"
+	commonSvc "fatalisa-public-api/service/common"
+	qrisSvc "fatalisa-public-api/service/qris"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/pieterclaerhout/go-log"
 	"os"
 )
 
-type Router struct {
+type Config struct {
 	Gin *gin.Engine
 }
 
@@ -30,7 +31,7 @@ func loggerTask(kind string, c *gin.Context) {
 }
 
 func saveLogToDB(kind string, ctxCopy *gin.Context) {
-	accessLog := &database.AccessLog{
+	accessLog := &entity.AccessLog{
 		Kind:     kind,
 		IP:       ctxCopy.ClientIP(),
 		Method:   ctxCopy.Request.Method,
@@ -40,7 +41,7 @@ func saveLogToDB(kind string, ctxCopy *gin.Context) {
 		accessLog.StatusCode = ctxCopy.Writer.Status()
 	}
 	//accessLog.WriteLog()
-	database.PutToRedisQueue(&accessLog, database.AccessLogKey)
+	config.PutToRedisQueue(&accessLog, entity.AccessLogKey)
 }
 
 func ginCustomLogger(c *gin.Context) {
@@ -53,13 +54,13 @@ func ginLogHandler() gin.HandlerFunc {
 	return ginCustomLogger
 }
 
-func (router *Router) Get() {
+func (router *Config) Get() {
 	router.Gin = gin.New()
 	router.Gin.Use(ginLogHandler())
 	gin.ForceConsoleColor()
 }
 
-func (router *Router) Run() {
+func (router *Config) Run() {
 	router.Get()
 	router.InitRoutes()
 	port, exist := os.LookupEnv("PORT")
@@ -73,34 +74,37 @@ func (router *Router) Run() {
 	}
 }
 
-func (router *Router) InitRoutes() {
+func (router *Config) InitRoutes() {
+	router.initLandingRoute()
 	router.initHealthRoute()
 	router.initApis()
 }
 
-func (router *Router) initHealthRoute() {
+func (router *Config) initLandingRoute() {
 	router.Gin.GET("/", func(c *gin.Context) {
-		//c.JSON(200, &utils.PostData{Kind: "Welcome"})
-		c.SecureJSON(200, &utils.Body{Message: "Welcome"})
-	})
-	router.Gin.GET("/health", func(c *gin.Context) {
-		c.SecureJSON(200, &utils.Body{Message: "pong"})
+		c.SecureJSON(200, &commonSvc.Body{Message: "Welcome"})
 	})
 }
 
-func (router *Router) initApis() {
+func (router *Config) initHealthRoute() {
+	router.Gin.GET("/health", func(c *gin.Context) {
+		c.SecureJSON(200, &commonSvc.Body{Message: "pong"})
+	})
+}
+
+func (router *Config) initApis() {
 	api := router.Gin.Group("/api")
 	{
 		api.GET("/datetime", func(c *gin.Context) {
-			response := utils.DatetimeApi()
-			c.SecureJSON(200, response)
+			response := commonSvc.DatetimeApi()
+			c.SecureJSON(200, &response)
 		})
 		api.POST("/pray-schedule", func(c *gin.Context) {
-			jsonBody := &utils.PrayScheduleReq{}
+			jsonBody := &commonSvc.PrayScheduleReq{}
 			if err := c.BindJSON(jsonBody); err != nil {
-				log.Error(utils.HeaderPray, "|", err)
+				log.Error(commonSvc.HeaderPray, "|", err)
 			} else {
-				response := utils.GetSchedule(jsonBody)
+				response := commonSvc.GetSchedule(jsonBody)
 				c.SecureJSON(200, &response)
 			}
 		})
@@ -108,26 +112,26 @@ func (router *Router) initApis() {
 		{
 			qrisGroup.GET("/mpm/:raw", func(c *gin.Context) {
 				raw := c.Param("raw")
-				result := qris.MpmData{}
+				result := qrisSvc.MpmData{}
 				result.GetData(raw)
 				c.SecureJSON(200, &result)
 			})
 			qrisGroup.POST("/mpm", func(c *gin.Context) {
-				mpmReq := &qris.MpmRequest{}
+				mpmReq := &qrisSvc.MpmRequest{}
 				if err := c.BindJSON(mpmReq); err != nil {
-					log.Error(qris.HeaderMpm, "|", err)
+					log.Error(qrisSvc.HeaderMpm, "|", err)
 				} else {
-					result := qris.MpmData{}
+					result := qrisSvc.MpmData{}
 					result.GetData(mpmReq.Raw)
 					c.SecureJSON(200, &result)
 				}
 			})
 			qrisGroup.POST("/cpm", func(c *gin.Context) {
-				cpmReq := &qris.CpmRequest{}
+				cpmReq := &qrisSvc.CpmRequest{}
 				if err := c.BindJSON(cpmReq); err != nil {
-					log.Error(qris.HeaderCpm, "|", err)
+					log.Error(qrisSvc.HeaderCpm, "|", err)
 				} else {
-					result := qris.CpmData{}
+					result := qrisSvc.CpmData{}
 					result.GetData(cpmReq.Raw)
 					c.SecureJSON(200, &result)
 				}

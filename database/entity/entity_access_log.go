@@ -1,8 +1,9 @@
-package database
+package entity
 
 import (
 	"context"
 	"encoding/json"
+	"fatalisa-public-api/database/config"
 	"github.com/gofrs/uuid"
 	"github.com/pieterclaerhout/go-log"
 	"go.mongodb.org/mongo-driver/bson"
@@ -29,34 +30,34 @@ type AccessLog struct {
 var AccessLogKey = "access_log"
 
 func (accessLog *AccessLog) WriteToMariaDB() {
-	if db := InitMariaDB(); db != nil {
-		defer Close(db)
+	if db := config.InitMariaDB(); db != nil {
+		defer config.CloseGorm(db)
 		if err := db.AutoMigrate(&accessLog); err != nil {
-			log.Error(HeaderGorm, "|", err)
+			log.Error(config.HeaderGorm, "|", err)
 		}
 		db.Create(&accessLog)
 	}
 }
 
 func (accessLog *AccessLog) WriteToPostgres() {
-	if db := InitPostgres(); db != nil {
-		defer Close(db)
+	if db := config.InitPostgres(); db != nil {
+		defer config.CloseGorm(db)
 		if err := db.AutoMigrate(&accessLog); err != nil {
-			log.Error(HeaderGorm, "|", err)
+			log.Error(config.HeaderGorm, "|", err)
 		}
 		db.Create(&accessLog)
 	}
 }
 
 func (accessLog *AccessLog) WriteToMongoDB() {
-	if db, ctx, conf := InitMongoDB(); db != nil {
-		defer CloseMongo(db, ctx)
+	if db, ctx, conf := config.InitMongoDB(); db != nil {
+		defer config.CloseMongo(db, ctx)
 		accessLogCol := db.Database(conf.Data).Collection(AccessLogKey)
 		if bsonData, err := bson.Marshal(&accessLog); err != nil {
-			log.Error(HeaderMongoDB, "|", err)
+			log.Error(config.HeaderMongoDB, "|", err)
 		} else {
 			if _, err := accessLogCol.InsertOne(ctx, bsonData); err != nil {
-				log.Error(HeaderMongoDB, "|", err)
+				log.Error(config.HeaderMongoDB, "|", err)
 			}
 		}
 	}
@@ -65,7 +66,7 @@ func (accessLog *AccessLog) WriteToMongoDB() {
 func (accessLog *AccessLog) WriteLog() {
 	uuidGenerated, err := uuid.NewV4()
 	if err != nil {
-		log.Error(HeaderGorm, "|", err)
+		log.Error(config.HeaderGorm, "|", err)
 	}
 	accessLog.UUID = uuidGenerated
 	accessLog.WriteToMariaDB()
@@ -74,8 +75,8 @@ func (accessLog *AccessLog) WriteLog() {
 }
 
 func (accessLog *AccessLog) GetFromRedis() {
-	if rdb := InitRedis(); rdb != nil {
-		defer CloseRedis(rdb)
+	if rdb := config.InitRedis(); rdb != nil {
+		defer config.CloseRedis(rdb)
 		for {
 			ctx := context.Background()
 			rawString := rdb.RPop(ctx, AccessLogKey).Val()

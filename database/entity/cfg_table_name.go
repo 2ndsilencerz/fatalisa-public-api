@@ -1,4 +1,4 @@
-package database
+package entity
 
 /*
 This function used to naming a table with custom name

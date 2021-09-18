@@ -3,9 +3,9 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fatalisa-public-api/config/router"
-	"fatalisa-public-api/utils"
-	"fatalisa-public-api/utils/qris"
+	"fatalisa-public-api/router"
+	"fatalisa-public-api/service/common"
+	"fatalisa-public-api/service/qris"
 	"github.com/pieterclaerhout/go-log"
 	"io/ioutil"
 	"net/http"
@@ -15,8 +15,8 @@ import (
 	"time"
 )
 
-func setupRouter() *router.Router {
-	routerInit := &router.Router{}
+func setupRouter() *router.Config {
+	routerInit := &router.Config{}
 	routerInit.Get()
 	routerInit.InitRoutes()
 	return routerInit
@@ -59,10 +59,10 @@ func sendAsPost(uri string, body []byte) []byte {
 }
 
 func TestGetSchedule(t *testing.T) {
-	MainWaitGroup.Wait()
+	common.DownloadFile()
 	current := time.Now()
 	city := "jakarta"
-	bodyReq := &utils.PrayScheduleReq{
+	bodyReq := &common.PrayScheduleReq{
 		City: city,
 		Date: current.Format("2006/01/02"),
 	}
@@ -70,7 +70,7 @@ func TestGetSchedule(t *testing.T) {
 	if bodyReqJson, err := json.Marshal(bodyReq); err != nil {
 		t.Error(err)
 	} else {
-		dataRes := &utils.PrayScheduleData{}
+		dataRes := &common.PrayScheduleData{}
 		rawRes := sendAsPost("/api/pray-schedule", bodyReqJson)
 		if err := json.Unmarshal(rawRes, dataRes); err != nil {
 			t.Error(err)
@@ -158,10 +158,10 @@ func TestParseMpmPost(t *testing.T) {
 			t.Error(err)
 		} else {
 			if reflect.DeepEqual(&dataRes, &testDataMpm.MpmData) {
-				t.Error()
+				t.Error("MPM Data not match")
 			}
 			if qris.CompareCrc(qris.GetResultMpm(testDataMpm.Raw), "0BE8") {
-				t.Error()
+				t.Error("CRC not match")
 			}
 		}
 	}
@@ -184,10 +184,8 @@ func TestParseCpmPost(t *testing.T) {
 		rawRes := sendAsPost("/api/qris/cpm", jsonBody)
 		if err := json.Unmarshal(rawRes, dataRes); err != nil {
 			t.Error(err)
-		} else {
-			if dataRes.PayloadFormatIndicator == "" || dataRes.ApplicationPAN == "" || dataRes.IssuerURL == "" {
-				t.Error()
-			}
+		} else if dataRes.PayloadFormatIndicator == "" || dataRes.ApplicationPAN == "" || dataRes.IssuerURL == "" {
+			t.Error("CPM Data Not Match")
 		}
 	}
 }
