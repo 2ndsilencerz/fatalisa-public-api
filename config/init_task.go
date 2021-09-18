@@ -3,7 +3,7 @@ package config
 import (
 	dbCfg "fatalisa-public-api/database/config"
 	"fatalisa-public-api/database/entity"
-	svc "fatalisa-public-api/service/common"
+	svc "fatalisa-public-api/service/common/pray-schedule"
 	"github.com/pieterclaerhout/go-log"
 	"os"
 )

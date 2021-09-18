@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fatalisa-public-api/router"
-	"fatalisa-public-api/service/common"
+	"fatalisa-public-api/service/common/pray-schedule"
 	"fatalisa-public-api/service/qris"
 	"github.com/pieterclaerhout/go-log"
 	"io/ioutil"
@@ -59,10 +59,10 @@ func sendAsPost(uri string, body []byte) []byte {
 }
 
 func TestGetSchedule(t *testing.T) {
-	common.DownloadFile()
+	pray_schedule.DownloadFile(83)
 	current := time.Now()
 	city := "jakarta"
-	bodyReq := &common.PrayScheduleReq{
+	bodyReq := &pray_schedule.PrayScheduleReq{
 		City: city,
 		Date: current.Format("2006/01/02"),
 	}
@@ -70,7 +70,7 @@ func TestGetSchedule(t *testing.T) {
 	if bodyReqJson, err := json.Marshal(bodyReq); err != nil {
 		t.Error(err)
 	} else {
-		dataRes := &common.PrayScheduleData{}
+		dataRes := &pray_schedule.PrayScheduleData{}
 		rawRes := sendAsPost("/api/pray-schedule", bodyReqJson)
 		if err := json.Unmarshal(rawRes, dataRes); err != nil {
 			t.Error(err)

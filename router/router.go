@@ -4,6 +4,7 @@ import (
 	"fatalisa-public-api/database/config"
 	"fatalisa-public-api/database/entity"
 	commonSvc "fatalisa-public-api/service/common"
+	"fatalisa-public-api/service/common/pray-schedule"
 	qrisSvc "fatalisa-public-api/service/qris"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -99,12 +100,15 @@ func (router *Config) initApis() {
 			response := commonSvc.DatetimeApi()
 			c.SecureJSON(200, &response)
 		})
+		api.GET("/pray-schedule/city-list", func(c *gin.Context) {
+			c.SecureJSON(200, pray_schedule.GetCityList())
+		})
 		api.POST("/pray-schedule", func(c *gin.Context) {
-			jsonBody := &commonSvc.PrayScheduleReq{}
+			jsonBody := &pray_schedule.PrayScheduleReq{}
 			if err := c.BindJSON(jsonBody); err != nil {
-				log.Error(commonSvc.HeaderPray, "|", err)
+				log.Error(pray_schedule.HeaderPray, "|", err)
 			} else {
-				response := commonSvc.GetSchedule(jsonBody)
+				response := pray_schedule.GetSchedule(jsonBody)
 				c.SecureJSON(200, &response)
 			}
 		})

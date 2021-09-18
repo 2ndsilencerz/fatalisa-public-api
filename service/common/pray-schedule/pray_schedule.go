@@ -1,4 +1,4 @@
-package common
+package pray_schedule
 
 import (
 	"bytes"
@@ -12,9 +12,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"gorm.io/gorm"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -23,7 +24,9 @@ var HeaderPray = fmt.Sprintf("%-8s", "pray-sch")
 func PraySchedDownload(duration string) {
 	for {
 		log.Info(HeaderPray, "|", "Downloading pray schedule")
-		DownloadFile()
+		for i := 1; i <= 308; i++ {
+			go DownloadFile(i)
+		}
 		sleepTime, err := time.ParseDuration(duration)
 		if err != nil {
 			log.Error(HeaderPray, "|", err)
@@ -32,12 +35,10 @@ func PraySchedDownload(duration string) {
 	}
 }
 
-func DownloadFile() {
-	fileName := "jadwal.xml"
-	file, errFileCreate := os.Create(fileName)
-	if errFileCreate != nil {
-		log.Error(HeaderPray, "|", errFileCreate)
-	}
+func DownloadFile(x int) {
+	var data *Header
+	cityCode := strconv.Itoa(x)
+
 	url := "http://jadwalsholat.pkpu.or.id/export.php"
 	contentType := "application/x-www-form-urlencoded"
 	body := "period=3" + "&" +
@@ -49,7 +50,7 @@ func DownloadFile() {
 		"edition=1" + "&" +
 		"compress=0" + "&" +
 		"adzanCountry=indonesia" + "&" +
-		"adzanCity=83" + "&" +
+		"adzanCity=" + cityCode + "&" +
 		"language=indonesian" + "&" +
 		"algo=1" + "&" +
 		"cbxViewParam=1" + "&" +
@@ -75,25 +76,49 @@ func DownloadFile() {
 			return nil
 		},
 	}
-	// Put content on file
+
+	// Download
 	res, err := client.Post(url, contentType, bytes.NewBuffer([]byte(body)))
 	if err != nil {
 		log.Error(HeaderPray, "|", err)
 	}
-	//res, errDownload := http.Post(url, contentType, bytes.NewBuffer([]byte(body)))
-	//if errDownload != nil {
-	//	log.Error(errDownload)
-	//}
-	defer closeResForDownload(res)
-	if errFileCreate == nil {
+
+	// Create file
+	fileName := "jadwal-" + strconv.Itoa(x) + ".xml"
+	file, errFileCreate := os.Create(fileName)
+	if errFileCreate != nil {
+		log.Error(HeaderPray, "|", errFileCreate)
+	} else {
 		body := res.Body
-		//os.WriteFile(fileName, , 0777)
 		if _, errWriteFile := io.Copy(file, body); errWriteFile != nil {
 			log.Error(HeaderPray, "|", errWriteFile)
-		} else {
-			log.Info(HeaderPray, "|", "Pray schedule downloaded")
 		}
+		errCloseFile := file.Close()
+		if errCloseFile != nil {
+			log.Error(HeaderPray, "|", errCloseFile)
+		}
+
+		// Rename the file
+		data = readFile(fileName)
+		newFileName := "jadwal-" + data.City + ".xml"
+		errRenameFile := os.Rename(fileName, newFileName)
+		if errRenameFile != nil {
+			log.Error(HeaderPray, "|", errRenameFile)
+		}
+		log.Info(HeaderPray, "|", "Pray schedule", data.City, "downloaded")
 	}
+
+	closeResForDownload(res)
+}
+
+func readFile(fileName string) *Header {
+	res := &Header{}
+	if file, errRead := os.ReadFile(fileName); errRead != nil {
+		log.Error(HeaderPray, "|", errRead)
+	} else if errParse := xml.Unmarshal(file, res); errParse != nil {
+		log.Error(HeaderPray, "|", errParse)
+	}
+	return res
 }
 
 func closeResForDownload(response *http.Response) {
@@ -147,30 +172,49 @@ type PrayScheduleLog struct {
 	PrayScheduleData `json:"response" gorm:"column:response" bson:"response"`
 }
 
+type city struct {
+	CityName string `json:"cityName"`
+}
+
 func GetSchedule(req *PrayScheduleReq) *PrayScheduleData {
 	responseData := &PrayScheduleData{}
-	if file, errRead := ioutil.ReadFile("jadwal.xml"); errRead != nil {
-		log.Error(HeaderPray, "|", errRead)
-	} else {
-		//data := &headerXML{}
-		data := &Header{}
-		if errParse := xml.Unmarshal(file, data); errParse != nil {
-			log.Error(HeaderPray, "|", errParse)
-		} else {
-			if data.City == req.City {
-				for i := 0; i < len(data.Data); i++ {
-					date, _ := time.Parse("2006/01/02", req.Date)
-					if data.Data[i].Year == date.Format("2006") &&
-						data.Data[i].Month == date.Format("01") &&
-						data.Data[i].Date == date.Format("02") {
-						responseData = &data.Data[i]
-					}
+	fileName := "jadwal-" + req.City + ".xml"
+	if data := readFile(fileName); data.Version != "" {
+		if data.City == req.City {
+			for i := 0; i < len(data.Data); i++ {
+				date, _ := time.Parse("2006/01/02", req.Date)
+				if data.Data[i].Year == date.Format("2006") &&
+					data.Data[i].Month == date.Format("01") &&
+					data.Data[i].Date == date.Format("02") {
+					responseData = &data.Data[i]
 				}
 			}
 		}
 	}
 	go saveLogToDB(*req, *responseData)
 	return responseData
+}
+
+func GetCityList() interface{} {
+	result := struct {
+		List []*city `json:"list"`
+	}{}
+	files, err := os.ReadDir(".")
+	if err != nil {
+		log.Error(HeaderPray, "|", err)
+	} else {
+		for _, file := range files {
+			if strings.Contains(file.Name(), "jadwal-") {
+				log.Info(file.Name())
+				cityName := strings.ReplaceAll(file.Name(), "jadwal-", "")
+				cityName = strings.ReplaceAll(cityName, ".xml", "")
+				result.List = append(result.List, &city{
+					CityName: cityName,
+				})
+			}
+		}
+	}
+	return result
 }
 
 func saveLogToDB(req PrayScheduleReq, res PrayScheduleData) {
