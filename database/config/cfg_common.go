@@ -44,6 +44,7 @@ func DbConnCheck() {
 		go checkPostgres()
 		go checkMariaDB()
 		go checkMongoDB()
+		go checkRedis()
 		if sleepTime, err := time.ParseDuration("30s"); err != nil {
 			log.Error(HeaderGorm, "|", err)
 		} else {
@@ -67,5 +68,11 @@ func checkMariaDB() {
 func checkMongoDB() {
 	if mongodb, ctx, _ := InitMongoDB(); mongodb != nil {
 		CloseMongo(mongodb, ctx)
+	}
+}
+
+func checkRedis() {
+	if rdb := InitRedis(); rdb != nil {
+		_ = rdb.Close()
 	}
 }

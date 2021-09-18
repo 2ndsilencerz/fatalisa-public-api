@@ -54,9 +54,8 @@ func (errorLog *ErrorLog) WriteLog() {
 }
 
 func (errorLog *ErrorLog) GetFromRedis() {
-	if rdb := config.InitRedis(); rdb != nil {
-		defer config.CloseRedis(rdb)
-		for {
+	for {
+		if rdb := config.InitRedis(); rdb != nil {
 			ctx := context.Background()
 			rawString := rdb.RPop(ctx, AccessLogKey).Val()
 			if len(rawString) > 0 {
@@ -67,6 +66,7 @@ func (errorLog *ErrorLog) GetFromRedis() {
 					errorLog.WriteLog()
 				}
 			}
+			config.CloseRedis(rdb)
 			sleepTime, _ := time.ParseDuration("1s")
 			time.Sleep(sleepTime)
 		}

@@ -276,9 +276,8 @@ func (praySchedLog *PrayScheduleLog) WriteToLog() {
 }
 
 func (praySchedLog *PrayScheduleLog) GetFromRedis() {
-	if rdb := config.InitRedis(); rdb != nil {
-		defer config.CloseRedis(rdb)
-		for {
+	for {
+		if rdb := config.InitRedis(); rdb != nil {
 			ctx := context.Background()
 			rawString := rdb.RPop(ctx, HeaderPray).Val()
 			if len(rawString) > 0 {
@@ -289,6 +288,7 @@ func (praySchedLog *PrayScheduleLog) GetFromRedis() {
 					praySchedLog.WriteToLog()
 				}
 			}
+			config.CloseRedis(rdb)
 			sleepTime, _ := time.ParseDuration("1s")
 			time.Sleep(sleepTime)
 		}

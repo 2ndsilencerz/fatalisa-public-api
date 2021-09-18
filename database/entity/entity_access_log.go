@@ -75,9 +75,8 @@ func (accessLog *AccessLog) WriteLog() {
 }
 
 func (accessLog *AccessLog) GetFromRedis() {
-	if rdb := config.InitRedis(); rdb != nil {
-		defer config.CloseRedis(rdb)
-		for {
+	for {
+		if rdb := config.InitRedis(); rdb != nil {
 			ctx := context.Background()
 			rawString := rdb.RPop(ctx, AccessLogKey).Val()
 			if len(rawString) > 0 {
@@ -88,6 +87,7 @@ func (accessLog *AccessLog) GetFromRedis() {
 					accessLog.WriteLog()
 				}
 			}
+			config.CloseRedis(rdb)
 			sleepTime, _ := time.ParseDuration("1s")
 			time.Sleep(sleepTime)
 		}
