@@ -65,8 +65,7 @@ func parseMPM(rawData string, rootId string) {
 
 func getContentMpm(rawData string) string {
 	strResult := ""
-	lengthData, err := strconv.Atoi(rawData[2:4])
-	if err != nil {
+	if lengthData, err := strconv.Atoi(rawData[2:4]); err != nil {
 		log.Error(HeaderMpm, "|", err)
 	} else {
 		strResult = rawData[4 : 4+lengthData]
@@ -87,17 +86,16 @@ func stripContent(rawData string, length int) string {
 }
 
 func isRootIdHaveSubId(rootId string) bool {
-	rootIdInt, err := strconv.Atoi(rootId)
-	if err != nil {
+	rootIdInt := 0
+	var err error
+	if rootIdInt, err = strconv.Atoi(rootId); err != nil {
 		log.Error(HeaderMpm, "|", err)
-	}
-	if rootIdInt >= 2 && rootIdInt <= 51 {
+	} else if rootIdInt >= 2 && rootIdInt <= 51 {
 		return true
 	} else if rootIdInt == 62 {
 		return true
-	} else {
-		return rootIdInt == 64
 	}
+	return rootIdInt == 64
 }
 
 func getQrisDataWithoutCrc(mapContent map[string]string) string {

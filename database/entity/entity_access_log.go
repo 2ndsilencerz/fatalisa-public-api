@@ -55,10 +55,8 @@ func (accessLog *AccessLog) WriteToMongoDB() {
 		accessLogCol := db.Database(conf.Data).Collection(AccessLogKey)
 		if bsonData, err := bson.Marshal(&accessLog); err != nil {
 			log.Error(config.HeaderMongoDB, "|", err)
-		} else {
-			if _, err := accessLogCol.InsertOne(ctx, bsonData); err != nil {
-				log.Error(config.HeaderMongoDB, "|", err)
-			}
+		} else if _, err := accessLogCol.InsertOne(ctx, bsonData); err != nil {
+			log.Error(config.HeaderMongoDB, "|", err)
 		}
 	}
 }

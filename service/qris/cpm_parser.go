@@ -22,8 +22,7 @@ var keysOfNumberData = []string{
 }
 
 func parseCPM(base64Str string) {
-	decodedBytesFromBase64, errDecodeBase64 := base64.StdEncoding.DecodeString(base64Str)
-	if errDecodeBase64 != nil {
+	if decodedBytesFromBase64, errDecodeBase64 := base64.StdEncoding.DecodeString(base64Str); errDecodeBase64 != nil {
 		log.Error(HeaderCpm, "|", errDecodeBase64)
 	} else {
 		rawHex := strings.ToUpper(hex.EncodeToString(decodedBytesFromBase64))
@@ -42,13 +41,11 @@ func getContentCpm(rawHex string, is4Digit bool) string {
 	var err error
 	if is4Digit {
 		start = 6
-		dataLength, err = strconv.ParseInt(rawHex[4:6], 16, 64)
-		if err != nil {
+		if dataLength, err = strconv.ParseInt(rawHex[4:6], 16, 64); err != nil {
 			log.Error(HeaderCpm, "|", err)
 		}
 	} else {
-		dataLength, err = strconv.ParseInt(rawHex[2:4], 16, 64)
-		if err != nil {
+		if dataLength, err = strconv.ParseInt(rawHex[2:4], 16, 64); err != nil {
 			log.Error(HeaderCpm, "|", err)
 		}
 	}
@@ -71,8 +68,7 @@ func putContentCpm(key string, hexData string) {
 	numericAcc := isNumericAccount(key)
 	data := hexData
 	if !number && !numericAcc {
-		decodedHex, err := hex.DecodeString(hexData)
-		if err != nil {
+		if decodedHex, err := hex.DecodeString(hexData); err != nil {
 			log.Error(HeaderCpm, "|", err)
 		} else {
 			data = string(decodedHex)

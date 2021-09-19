@@ -22,8 +22,8 @@ func init() {
 
 // set logger format
 func init() {
-	log.DebugMode = true
-	log.DebugSQLMode = true
+	log.DebugMode = false
+	log.DebugSQLMode = false
 	log.PrintTimestamp = true
 	log.PrintColors = true
 	log.TimeFormat = "2006/01/02 15:04:05 -0700"

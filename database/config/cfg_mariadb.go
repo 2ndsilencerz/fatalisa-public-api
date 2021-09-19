@@ -32,12 +32,12 @@ func init() {
 
 func InitMariaDB() *gorm.DB {
 	var db *gorm.DB
+	var err error
 	dsn := mariaDbCfg.User + ":" + mariaDbCfg.Pass + "@tcp(" + mariaDbCfg.Host + ":3306)/" + mariaDbCfg.Data
 	//log.Info(HeaderGorm, "|", dsn)
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+	if db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
-	})
-	if err != nil {
+	}); err != nil {
 		str := fmt.Sprintf("%-8s", "mariadb")
 		log.Error(str, "|", err)
 		//panic(err)

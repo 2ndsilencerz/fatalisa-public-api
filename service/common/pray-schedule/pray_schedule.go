@@ -16,22 +16,32 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
 var HeaderPray = fmt.Sprintf("%-8s", "pray-sch")
+var downloadTask = 0
+var downloadGroup = sync.WaitGroup{}
+
+const maxDownloadTask = 3
 
 func PraySchedDownload(duration string) {
 	for {
 		log.Info(HeaderPray, "|", "Downloading pray schedule")
 		for i := 1; i <= 308; i++ {
+			downloadTask++
+			downloadGroup.Add(1)
 			go DownloadFile(i)
+			if downloadTask > maxDownloadTask {
+				downloadGroup.Wait()
+			}
 		}
-		sleepTime, err := time.ParseDuration(duration)
-		if err != nil {
+		if sleepTime, err := time.ParseDuration(duration); err != nil {
 			log.Error(HeaderPray, "|", err)
+		} else {
+			time.Sleep(sleepTime)
 		}
-		time.Sleep(sleepTime)
 	}
 }
 
@@ -78,41 +88,44 @@ func DownloadFile(x int) {
 	}
 
 	// Download
-	res, err := client.Post(url, contentType, bytes.NewBuffer([]byte(body)))
-	if err != nil {
+	if res, err := client.Post(url, contentType, bytes.NewBuffer([]byte(body))); err != nil {
 		log.Error(HeaderPray, "|", err)
-	}
-
-	// Create file
-	fileName := "jadwal-" + strconv.Itoa(x) + ".xml"
-	file, errFileCreate := os.Create(fileName)
-	if errFileCreate != nil {
-		log.Error(HeaderPray, "|", errFileCreate)
 	} else {
-		body := res.Body
-		if _, errWriteFile := io.Copy(file, body); errWriteFile != nil {
-			log.Error(HeaderPray, "|", errWriteFile)
-		}
-		errOwnFile := file.Chown(0, 0)
-		if errOwnFile != nil {
-			log.Error(HeaderPray, "|", errOwnFile)
-		}
-		errCloseFile := file.Close()
-		if errCloseFile != nil {
-			log.Error(HeaderPray, "|", errCloseFile)
-		}
+		// Create file
+		fileName := "jadwal-" + strconv.Itoa(x) + ".xml"
+		file, errFileCreate := os.Create(fileName)
+		if errFileCreate != nil {
+			log.Error(HeaderPray, "|", errFileCreate)
+		} else {
+			body := res.Body
+			if _, errWriteFile := io.Copy(file, body); errWriteFile != nil {
+				log.Error(HeaderPray, "|", errWriteFile)
+			}
+			if errOwnFile := file.Chown(0, 0); errOwnFile != nil {
+				log.Error(HeaderPray, "|", errOwnFile)
+			}
+			if errModFile := file.Chmod(0777); errModFile != nil {
+				log.Error(HeaderPray, "|", errModFile)
+			}
+			if errCloseFile := file.Close(); errCloseFile != nil {
+				log.Error(HeaderPray, "|", errCloseFile)
+			}
 
-		// Rename the file
-		data = readFile(fileName)
-		newFileName := "jadwal-" + data.City + ".xml"
-		errRenameFile := os.Rename(fileName, newFileName)
-		if errRenameFile != nil {
-			log.Error(HeaderPray, "|", errRenameFile)
+			// Rename the file
+			data = readFile(fileName)
+			newFileName := "jadwal-" + data.City + ".xml"
+			if errRenameFile := os.Rename(fileName, newFileName); errRenameFile != nil {
+				log.Error(HeaderPray, "|", errRenameFile)
+			}
+			log.Info(HeaderPray, "|", "Pray schedule", data.City, "downloaded")
 		}
-		log.Info(HeaderPray, "|", "Pray schedule", data.City, "downloaded")
+		closeResForDownload(res)
 	}
 
-	closeResForDownload(res)
+	if downloadTask > 0 {
+		downloadGroup.Done()
+		downloadTask--
+	}
 }
 
 func readFile(fileName string) *Header {
@@ -183,15 +196,13 @@ type city struct {
 func GetSchedule(req *PrayScheduleReq) *PrayScheduleData {
 	responseData := &PrayScheduleData{}
 	fileName := "jadwal-" + req.City + ".xml"
-	if data := readFile(fileName); data.Version != "" {
-		if data.City == req.City {
-			for i := 0; i < len(data.Data); i++ {
-				date, _ := time.Parse("2006/01/02", req.Date)
-				if data.Data[i].Year == date.Format("2006") &&
-					data.Data[i].Month == date.Format("01") &&
-					data.Data[i].Date == date.Format("02") {
-					responseData = &data.Data[i]
-				}
+	if data := readFile(fileName); data.Version != "" && data.City == req.City {
+		for i := 0; i < len(data.Data); i++ {
+			date, _ := time.Parse("2006/01/02", req.Date)
+			if data.Data[i].Year == date.Format("2006") &&
+				data.Data[i].Month == date.Format("01") &&
+				data.Data[i].Date == date.Format("02") {
+				responseData = &data.Data[i]
 			}
 		}
 	}
@@ -203,13 +214,11 @@ func GetCityList() interface{} {
 	result := struct {
 		List []*city `json:"list"`
 	}{}
-	files, err := os.ReadDir(".")
-	if err != nil {
+	if files, err := os.ReadDir("."); err != nil {
 		log.Error(HeaderPray, "|", err)
 	} else {
 		for _, file := range files {
 			if strings.Contains(file.Name(), "jadwal-") {
-				log.Info(file.Name())
 				cityName := strings.ReplaceAll(file.Name(), "jadwal-", "")
 				cityName = strings.ReplaceAll(cityName, ".xml", "")
 				result.List = append(result.List, &city{
@@ -261,10 +270,8 @@ func (praySchedLog *PrayScheduleLog) WriteToMongoDB() {
 		accessLogCol := db.Database(conf.Data).Collection(HeaderPray)
 		if bsonData, err := bson.Marshal(&praySchedLog); err != nil {
 			log.Error(config.HeaderMongoDB, "|", err)
-		} else {
-			if _, err := accessLogCol.InsertOne(ctx, bsonData); err != nil {
-				log.Error(config.HeaderMongoDB, "|", err)
-			}
+		} else if _, err := accessLogCol.InsertOne(ctx, bsonData); err != nil {
+			log.Error(config.HeaderMongoDB, "|", err)
 		}
 	}
 }

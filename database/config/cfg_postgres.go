@@ -32,16 +32,16 @@ func init() {
 
 func InitPostgres() *gorm.DB {
 	var db *gorm.DB
+	var err error
 	dsn := "host=" + postgresCfg.Host +
 		" user=" + postgresCfg.User +
 		" password=" + postgresCfg.Pass +
 		" dbname=" + postgresCfg.Data +
 		" port=5432 TimeZone=Asia/Jakarta"
 	//log.Info(HeaderGorm, "|", dsn)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+	if db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
-	})
-	if err != nil {
+	}); err != nil {
 		str := fmt.Sprintf("%-8s", "postgres")
 		log.Error(str, "|", err)
 		//panic(err)

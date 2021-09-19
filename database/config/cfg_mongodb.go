@@ -33,11 +33,11 @@ func init() {
 
 func InitMongoDB() (*mongo.Client, context.Context, *MongoDBConf) {
 	var db *mongo.Client
+	var err error
 	ctx := context.Background()
 	dsn := "mongodb://" + mongoDbConf.User + ":" + mongoDbConf.Pass + "@" + mongoDbConf.Host + ":27017/"
 	//log.Info(HeaderGorm, "|", dsn)
-	db, err := mongo.Connect(ctx, options.Client().ApplyURI(dsn))
-	if err != nil {
+	if db, err = mongo.Connect(ctx, options.Client().ApplyURI(dsn)); err != nil {
 		log.Error(HeaderMongoDB, "|", err)
 	}
 	return db, ctx, mongoDbConf

@@ -28,7 +28,7 @@ func loggerTask(kind string, c *gin.Context) {
 	}
 	clientIP := fmt.Sprintf("%s", c.ClientIP())
 	log.Info(HeaderGin, "|", kind, clientIP, reqMethod, reqUri, statusCode)
-	go saveLogToDB(kind, c)
+	go saveLogToDB(kind, c.Copy())
 }
 
 func saveLogToDB(kind string, ctxCopy *gin.Context) {

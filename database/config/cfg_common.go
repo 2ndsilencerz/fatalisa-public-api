@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/pieterclaerhout/go-log"
@@ -16,11 +17,9 @@ func CloseGorm(database *gorm.DB) {
 	if db, err := database.DB(); err != nil {
 		log.Error(HeaderGorm, "|", err)
 		panic(err)
-	} else {
-		if err = db.Close(); err != nil {
-			log.Error(HeaderGorm, "|", err)
-			panic(err)
-		}
+	} else if err = db.Close(); err != nil {
+		log.Error(HeaderGorm, "|", err)
+		panic(err)
 	}
 }
 
@@ -56,23 +55,44 @@ func DbConnCheck() {
 func checkPostgres() {
 	if postgres := InitPostgres(); postgres != nil {
 		CloseGorm(postgres)
+	} else {
+		conf := &PostgresConf{}
+		conf.Get()
+		printConf(conf)
 	}
 }
 
 func checkMariaDB() {
 	if mariadb := InitMariaDB(); mariadb != nil {
 		CloseGorm(mariadb)
+	} else {
+		conf := &MariaDBConf{}
+		conf.Get()
+		printConf(conf)
 	}
 }
 
 func checkMongoDB() {
 	if mongodb, ctx, _ := InitMongoDB(); mongodb != nil {
 		CloseMongo(mongodb, ctx)
+	} else {
+		conf := &MongoDBConf{}
+		conf.Get()
+		printConf(conf)
 	}
 }
 
 func checkRedis() {
 	if rdb := InitRedis(); rdb != nil {
 		_ = rdb.Close()
+	} else {
+		conf := &RedisConf{}
+		conf.Get()
+		printConf(conf)
 	}
+}
+
+func printConf(v interface{}) {
+	jsonify, _ := json.Marshal(v)
+	log.Debug(string(jsonify))
 }
