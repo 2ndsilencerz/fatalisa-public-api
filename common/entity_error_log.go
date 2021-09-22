@@ -1,4 +1,4 @@
-package entity
+package common
 
 import (
 	"context"
@@ -8,6 +8,8 @@ import (
 	"github.com/pieterclaerhout/go-log"
 	"time"
 )
+
+var errorLogKey = "error_log"
 
 type ErrorLog struct {
 	UUID      uuid.UUID `json:"uuid" bson:"uuid"`
@@ -57,11 +59,11 @@ func (errorLog *ErrorLog) GetFromRedis() {
 	for {
 		if rdb := config.InitRedis(); rdb != nil {
 			ctx := context.Background()
-			rawString := rdb.RPop(ctx, accessLogKey).Val()
+			rawString := rdb.RPop(ctx, errorLogKey).Val()
 			if len(rawString) > 0 {
 				errorLog = &ErrorLog{}
 				if err := json.Unmarshal([]byte(rawString), errorLog); err != nil {
-					log.Error(ErrorLogKey, "|", err)
+					log.Error(err)
 				} else {
 					errorLog.WriteLog()
 				}

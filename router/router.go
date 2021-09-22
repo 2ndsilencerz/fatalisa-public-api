@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fatalisa-public-api/database/entity"
 	commonSvc "fatalisa-public-api/service/common"
 	"fatalisa-public-api/service/common/pray-schedule"
 	qrisSvc "fatalisa-public-api/service/qris"
@@ -26,7 +25,7 @@ func loggerTask(kind string, c *gin.Context) {
 }
 
 func saveLogToDB(kind string, c *gin.Context) {
-	accessLog := &entity.AccessLog{
+	accessLog := &AccessLog{
 		Kind:       kind,
 		IP:         c.ClientIP(),
 		Method:     c.Request.Method,

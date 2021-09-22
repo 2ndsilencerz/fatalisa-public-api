@@ -1,4 +1,4 @@
-package entity
+package router
 
 /*
 This function used to naming a table with custom name
@@ -10,9 +10,5 @@ type Tabler interface {
 }
 
 func (AccessLog) TableName() string {
-	return "access_log"
-}
-
-func (ErrorLog) TableName() string {
-	return "error_log"
+	return accessLogKey
 }

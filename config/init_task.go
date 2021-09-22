@@ -1,15 +1,17 @@
 package config
 
 import (
+	"fatalisa-public-api/common"
 	dbCfg "fatalisa-public-api/database/config"
-	"fatalisa-public-api/database/entity"
-	svc "fatalisa-public-api/service/common/pray-schedule"
+	"fatalisa-public-api/router"
+	service "fatalisa-public-api/service/common/pray-schedule"
 	"fatalisa-public-api/service/qris"
 	"github.com/pieterclaerhout/go-log"
 	"os"
 )
 
 //var headerCfg = fmt.Sprintf("%-8s", "svc-cfg")
+var downloadRangeTime = "1h"
 
 func Init() {
 }
@@ -38,13 +40,13 @@ func init() {
 
 // run redis queue checker per entity
 func init() {
-	accessLog := &entity.AccessLog{}
+	accessLog := &router.AccessLog{}
 	go accessLog.GetFromRedis()
 
-	praySchedLog := &svc.PrayScheduleLog{}
+	praySchedLog := &service.PrayScheduleLog{}
 	go praySchedLog.GetFromRedis()
 
-	errorLog := &entity.ErrorLog{}
+	errorLog := &common.ErrorLog{}
 	go errorLog.GetFromRedis()
 
 	qrisLog := &qris.Log{}
@@ -53,7 +55,7 @@ func init() {
 
 // run scheduled download for certain time
 func init() {
-	go svc.PraySchedDownload("1h")
+	go service.PraySchedDownload(downloadRangeTime)
 }
 
 //// print config list
