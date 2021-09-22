@@ -27,7 +27,7 @@ func TestGetSchedule(t *testing.T) {
 func TestGetCityList(t *testing.T) {
 	DownloadFile(83)
 	jsonRes := utils.Jsonify(GetCityList())
-	if !strings.Contains(string(jsonRes), "jakarta") {
+	if !strings.Contains(jsonRes, "jakarta") {
 		t.Error("Data not found")
 	}
 }

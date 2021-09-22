@@ -22,7 +22,7 @@ func init() {
 func TestCpmParse(t *testing.T) {
 	cpmData := &CpmData{}
 	cpmData.GetData(testDataCpm.raw)
-	log.Infof(utils.Jsonify(cpmData))
+	log.Info(utils.Jsonify(cpmData))
 
 	if cpmData.PayloadFormatIndicator == "" || cpmData.ApplicationPAN == "" || cpmData.IssuerURL == "" {
 		t.Error()
