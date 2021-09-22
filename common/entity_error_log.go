@@ -12,6 +12,14 @@ import (
 
 var errorLogKey = "error_log"
 
+type Tabler interface {
+	TableName() string
+}
+
+func (ErrorLog) TableName() string {
+	return errorLogKey
+}
+
 type ErrorLog struct {
 	UUID      uuid.UUID `json:"uuid" bson:"uuid"`
 	Message   string    `json:"message" bson:"message"`
