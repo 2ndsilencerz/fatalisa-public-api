@@ -4,8 +4,8 @@ import (
 	"fatalisa-public-api/common"
 	dbCfg "fatalisa-public-api/database/config"
 	"fatalisa-public-api/router"
-	service "fatalisa-public-api/service/common/pray-schedule"
-	"fatalisa-public-api/service/qris"
+	prayScheduleSvc "fatalisa-public-api/service/common/pray-schedule"
+	qrisSvc "fatalisa-public-api/service/qris"
 	"github.com/pieterclaerhout/go-log"
 	"os"
 )
@@ -43,19 +43,19 @@ func init() {
 	accessLog := &router.AccessLog{}
 	go accessLog.GetFromRedis()
 
-	praySchedLog := &service.PrayScheduleLog{}
+	praySchedLog := &prayScheduleSvc.PrayScheduleLog{}
 	go praySchedLog.GetFromRedis()
 
 	errorLog := &common.ErrorLog{}
 	go errorLog.GetFromRedis()
 
-	qrisLog := &qris.Log{}
+	qrisLog := &qrisSvc.Log{}
 	go qrisLog.GetFromRedis()
 }
 
 // run scheduled download for certain time
 func init() {
-	go service.PraySchedDownload(downloadRangeTime)
+	go prayScheduleSvc.PraySchedDownload(downloadRangeTime)
 }
 
 //// print config list
