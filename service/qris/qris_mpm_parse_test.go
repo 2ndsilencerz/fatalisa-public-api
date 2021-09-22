@@ -12,10 +12,10 @@ type MpmTestData struct {
 	*MpmData
 }
 
-var TestDataMpm *MpmTestData
+var testDataMpm *MpmTestData
 
 func init() {
-	TestDataMpm = &MpmTestData{
+	testDataMpm = &MpmTestData{
 		Raw: "00020101021126670018ID.CO.EXAMPLE2.WWW01159360056701234560215MIDCONTOH1234560303UMI5204123453033605502015802ID5914NamaMerchantC76009NamaKota16110123456789062070703K1963040BE8",
 		MpmData: &MpmData{
 			GlobalUniqueIdentifier: "ID.CO.EXAMPLE2.WWW",
@@ -38,14 +38,14 @@ func init() {
 
 func TestMpmParse(t *testing.T) {
 	mpmData := &MpmData{}
-	mpmData.GetData(TestDataMpm.Raw)
+	mpmData.GetData(testDataMpm.Raw)
 	jsonFormat := utils.Jsonify(mpmData)
 	log.Info(jsonFormat)
 
-	if reflect.DeepEqual(&mpmData, &TestDataMpm.MpmData) {
+	if reflect.DeepEqual(&mpmData, &testDataMpm.MpmData) {
 		t.Error()
 	}
-	if CompareCrc(GetResultMpm(TestDataMpm.Raw), "0BE8") {
+	if CompareCrc(GetResultMpm(testDataMpm.Raw), "0BE8") {
 		t.Error()
 	}
 }
