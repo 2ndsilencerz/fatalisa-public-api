@@ -4,6 +4,7 @@ import (
 	dbCfg "fatalisa-public-api/database/config"
 	"fatalisa-public-api/database/entity"
 	svc "fatalisa-public-api/service/common/pray-schedule"
+	"fatalisa-public-api/service/qris"
 	"github.com/pieterclaerhout/go-log"
 	"os"
 )
@@ -45,6 +46,9 @@ func init() {
 
 	errorLog := &entity.ErrorLog{}
 	go errorLog.GetFromRedis()
+
+	qrisLog := &qris.Log{}
+	go qrisLog.GetFromRedis()
 }
 
 // run scheduled download for certain time

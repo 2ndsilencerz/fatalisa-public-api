@@ -19,6 +19,11 @@ func ParseMpmService(c *gin.Context) *MpmData {
 	res := &MpmData{}
 	res.GetData(req.Raw)
 	log.Info(utils.Jsonify(res))
+	qrisLog := &Log{
+		MpmRequest:  req,
+		MpmResponse: res,
+	}
+	qrisLog.PutToRedisQueue()
 	return res
 }
 
@@ -33,5 +38,10 @@ func ParseCpmService(c *gin.Context) *CpmData {
 	res := &CpmData{}
 	res.GetData(req.Raw)
 	log.Info(res)
+	qrisLog := &Log{
+		CpmRequest:  req,
+		CpmResponse: res,
+	}
+	qrisLog.PutToRedisQueue()
 	return res
 }
