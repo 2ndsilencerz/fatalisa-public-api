@@ -27,13 +27,13 @@ type AccessLog struct {
 	Created    int64     `gorm:"autoCreateTime,column:created" json:"created" bson:"created"`
 }
 
-var AccessLogKey = "access_log"
+var accessLogKey = "access_log"
 
 func (accessLog *AccessLog) WriteToMariaDB() {
 	if db := config.InitMariaDB(); db != nil {
 		defer config.CloseGorm(db)
 		if err := db.AutoMigrate(&accessLog); err != nil {
-			log.Error(config.HeaderGorm, "|", err)
+			log.Error(err)
 		}
 		db.Create(&accessLog)
 	}
@@ -43,7 +43,7 @@ func (accessLog *AccessLog) WriteToPostgres() {
 	if db := config.InitPostgres(); db != nil {
 		defer config.CloseGorm(db)
 		if err := db.AutoMigrate(&accessLog); err != nil {
-			log.Error(config.HeaderGorm, "|", err)
+			log.Error(err)
 		}
 		db.Create(&accessLog)
 	}
@@ -52,11 +52,11 @@ func (accessLog *AccessLog) WriteToPostgres() {
 func (accessLog *AccessLog) WriteToMongoDB() {
 	if db, ctx, conf := config.InitMongoDB(); db != nil {
 		defer config.CloseMongo(db, ctx)
-		accessLogCol := db.Database(conf.Data).Collection(AccessLogKey)
+		accessLogCol := db.Database(conf.Data).Collection(accessLogKey)
 		if bsonData, err := bson.Marshal(&accessLog); err != nil {
-			log.Error(config.HeaderMongoDB, "|", err)
+			log.Error(err)
 		} else if _, err := accessLogCol.InsertOne(ctx, bsonData); err != nil {
-			log.Error(config.HeaderMongoDB, "|", err)
+			log.Error(err)
 		}
 	}
 }
@@ -64,7 +64,7 @@ func (accessLog *AccessLog) WriteToMongoDB() {
 func (accessLog *AccessLog) WriteLog() {
 	uuidGenerated, err := uuid.NewV4()
 	if err != nil {
-		log.Error(config.HeaderGorm, "|", err)
+		log.Error(err)
 	}
 	accessLog.UUID = uuidGenerated
 	accessLog.WriteToMariaDB()
@@ -72,15 +72,19 @@ func (accessLog *AccessLog) WriteLog() {
 	accessLog.WriteToMongoDB()
 }
 
+func (accessLog *AccessLog) PutToRedisQueue() {
+	config.PutToRedisQueue(accessLog, accessLogKey)
+}
+
 func (accessLog *AccessLog) GetFromRedis() {
 	for {
 		if rdb := config.InitRedis(); rdb != nil {
 			ctx := context.Background()
-			rawString := rdb.RPop(ctx, AccessLogKey).Val()
+			rawString := rdb.RPop(ctx, accessLogKey).Val()
 			if len(rawString) > 0 {
 				accessLog = &AccessLog{}
 				if err := json.Unmarshal([]byte(rawString), accessLog); err != nil {
-					log.Error(AccessLogKey, "|", err)
+					log.Error(err)
 				} else {
 					accessLog.WriteLog()
 				}
@@ -95,7 +99,7 @@ func (accessLog *AccessLog) GetFromRedis() {
 //func (accessLog *AccessLog) InitSubscriber() *redis.PubSub {
 //	ctx := context.Background()
 //	rdb := InitRedis()
-//	subscriber := rdb.Subscribe(ctx, AccessLogKey)
+//	subscriber := rdb.Subscribe(ctx, accessLogKey)
 //	return subscriber
 //}
 //

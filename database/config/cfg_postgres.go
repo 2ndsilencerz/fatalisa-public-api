@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"github.com/pieterclaerhout/go-log"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -38,13 +37,10 @@ func InitPostgres() *gorm.DB {
 		" password=" + postgresCfg.Pass +
 		" dbname=" + postgresCfg.Data +
 		" port=5432 TimeZone=Asia/Jakarta"
-	//log.Info(HeaderGorm, "|", dsn)
 	if db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	}); err != nil {
-		str := fmt.Sprintf("%-8s", "postgres")
-		log.Error(str, "|", err)
-		//panic(err)
+		log.Error(err)
 	}
 	return db
 }

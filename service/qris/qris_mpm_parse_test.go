@@ -1,7 +1,7 @@
 package qris
 
 import (
-	"encoding/json"
+	"fatalisa-public-api/service/utils"
 	"github.com/pieterclaerhout/go-log"
 	"reflect"
 	"testing"
@@ -39,8 +39,8 @@ func init() {
 func TestMpmParse(t *testing.T) {
 	mpmData := &MpmData{}
 	mpmData.GetData(TestDataMpm.Raw)
-	jsonFormat, _ := json.Marshal(&mpmData)
-	log.Info(string(jsonFormat))
+	jsonFormat := utils.Jsonify(mpmData)
+	log.Info(jsonFormat)
 
 	if reflect.DeepEqual(&mpmData, &TestDataMpm.MpmData) {
 		t.Error()

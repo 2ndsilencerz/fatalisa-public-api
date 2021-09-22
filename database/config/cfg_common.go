@@ -2,8 +2,7 @@ package config
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
+	"fatalisa-public-api/service/utils"
 	"github.com/go-redis/redis/v8"
 	"github.com/pieterclaerhout/go-log"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -11,41 +10,39 @@ import (
 	"time"
 )
 
-var HeaderGorm = fmt.Sprintf("%-8s", "gorm")
-
 func CloseGorm(database *gorm.DB) {
 	if db, err := database.DB(); err != nil {
-		log.Error(HeaderGorm, "|", err)
+		log.Error(err)
 		panic(err)
 	} else if err = db.Close(); err != nil {
-		log.Error(HeaderGorm, "|", err)
+		log.Error(err)
 		panic(err)
 	}
 }
 
 func CloseMongo(database *mongo.Client, ctx context.Context) {
 	if err := database.Disconnect(ctx); err != nil {
-		log.Error(HeaderMongoDB, "|", err)
+		log.Error(err)
 		panic(err)
 	}
 }
 
 func CloseRedis(client *redis.Client) {
 	if err := client.Close(); err != nil {
-		log.Error(HeaderRedis, "|", err)
+		log.Error(err)
 		panic(err)
 	}
 }
 
 func DbConnCheck() {
 	for {
-		log.Info(HeaderGorm, "|", "Checking DB connection")
+		log.Info("Checking DB connection")
 		go checkPostgres()
 		go checkMariaDB()
 		go checkMongoDB()
 		go checkRedis()
 		if sleepTime, err := time.ParseDuration("30s"); err != nil {
-			log.Error(HeaderGorm, "|", err)
+			log.Error(err)
 		} else {
 			time.Sleep(sleepTime)
 		}
@@ -93,6 +90,5 @@ func checkRedis() {
 }
 
 func printConf(v interface{}) {
-	jsonify, _ := json.Marshal(v)
-	log.Debug(string(jsonify))
+	log.Debug(utils.Jsonify(v))
 }

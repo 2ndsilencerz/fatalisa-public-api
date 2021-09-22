@@ -11,8 +11,6 @@ import (
 var waitGroup = sync.WaitGroup{}
 var totalGoRoutine = 0
 
-var HeaderMpm = fmt.Sprintf("%-8s", "mpm")
-
 // SEPARATOR only used as key in map for subId
 const SEPARATOR = ""
 const MaxIndex = 65
@@ -66,7 +64,7 @@ func parseMPM(rawData string, rootId string) {
 func getContentMpm(rawData string) string {
 	strResult := ""
 	if lengthData, err := strconv.Atoi(rawData[2:4]); err != nil {
-		log.Error(HeaderMpm, "|", err)
+		log.Error(err)
 	} else {
 		strResult = rawData[4 : 4+lengthData]
 	}
@@ -89,7 +87,7 @@ func isRootIdHaveSubId(rootId string) bool {
 	rootIdInt := 0
 	var err error
 	if rootIdInt, err = strconv.Atoi(rootId); err != nil {
-		log.Error(HeaderMpm, "|", err)
+		log.Error(err)
 	} else if rootIdInt >= 2 && rootIdInt <= 51 {
 		return true
 	} else if rootIdInt == 62 {

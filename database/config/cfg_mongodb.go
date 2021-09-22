@@ -2,7 +2,6 @@ package config
 
 import (
 	"context"
-	"fmt"
 	"github.com/pieterclaerhout/go-log"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -17,7 +16,6 @@ type MongoDBConf struct {
 }
 
 var mongoDbConf *MongoDBConf
-var HeaderMongoDB = fmt.Sprintf("%-8s", "mongodb")
 
 func (conf *MongoDBConf) Get() {
 	conf.Host, _ = os.LookupEnv("MONGODB_HOST")
@@ -36,9 +34,8 @@ func InitMongoDB() (*mongo.Client, context.Context, *MongoDBConf) {
 	var err error
 	ctx := context.Background()
 	dsn := "mongodb://" + mongoDbConf.User + ":" + mongoDbConf.Pass + "@" + mongoDbConf.Host + ":27017/"
-	//log.Info(HeaderGorm, "|", dsn)
 	if db, err = mongo.Connect(ctx, options.Client().ApplyURI(dsn)); err != nil {
-		log.Error(HeaderMongoDB, "|", err)
+		log.Error(err)
 	}
 	return db, ctx, mongoDbConf
 }

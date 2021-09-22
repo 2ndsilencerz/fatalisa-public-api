@@ -3,14 +3,11 @@ package qris
 import (
 	"encoding/base64"
 	"encoding/hex"
-	"fmt"
 	"github.com/pieterclaerhout/go-log"
 	"regexp"
 	"strconv"
 	"strings"
 )
-
-var HeaderCpm = fmt.Sprintf("%-8s", "cpm")
 
 var idList = []string{"4F", "50", "57", "5A", "5F", "9F", "63"}
 var id5FList = []string{"5F20", "5F2D", "5F50"}
@@ -23,7 +20,7 @@ var keysOfNumberData = []string{
 
 func parseCPM(base64Str string) {
 	if decodedBytesFromBase64, errDecodeBase64 := base64.StdEncoding.DecodeString(base64Str); errDecodeBase64 != nil {
-		log.Error(HeaderCpm, "|", errDecodeBase64)
+		log.Error(errDecodeBase64)
 	} else {
 		rawHex := strings.ToUpper(hex.EncodeToString(decodedBytesFromBase64))
 		id85Content := getContentCpm(rawHex, false)
@@ -42,11 +39,11 @@ func getContentCpm(rawHex string, is4Digit bool) string {
 	if is4Digit {
 		start = 6
 		if dataLength, err = strconv.ParseInt(rawHex[4:6], 16, 64); err != nil {
-			log.Error(HeaderCpm, "|", err)
+			log.Error(err)
 		}
 	} else {
 		if dataLength, err = strconv.ParseInt(rawHex[2:4], 16, 64); err != nil {
-			log.Error(HeaderCpm, "|", err)
+			log.Error(err)
 		}
 	}
 	return rawHex[start : start+(dataLength*2)]
@@ -69,7 +66,7 @@ func putContentCpm(key string, hexData string) {
 	data := hexData
 	if !number && !numericAcc {
 		if decodedHex, err := hex.DecodeString(hexData); err != nil {
-			log.Error(HeaderCpm, "|", err)
+			log.Error(err)
 		} else {
 			data = string(decodedHex)
 		}

@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/pieterclaerhout/go-log"
 	"strings"
 )
 
@@ -29,4 +31,13 @@ func CheckSum(str string) string {
 	output = fmt.Sprintf("%04x", crc)
 	output = strings.ToUpper(output)
 	return output
+}
+
+func Jsonify(v interface{}) string {
+	var j []byte
+	var err error
+	if j, err = json.Marshal(v); err != nil {
+		log.Error(err)
+	}
+	return string(j)
 }

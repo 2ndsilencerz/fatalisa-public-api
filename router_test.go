@@ -6,6 +6,7 @@ import (
 	"fatalisa-public-api/router"
 	"fatalisa-public-api/service/common/pray-schedule"
 	"fatalisa-public-api/service/qris"
+	"fatalisa-public-api/service/utils"
 	"github.com/pieterclaerhout/go-log"
 	"io/ioutil"
 	"net/http"
@@ -67,11 +68,9 @@ func TestGetSchedule(t *testing.T) {
 		Date: current.Format("2006/01/02"),
 	}
 
-	if bodyReqJson, err := json.Marshal(bodyReq); err != nil {
-		t.Error(err)
-	} else {
+	if bodyReqJson := utils.Jsonify(bodyReq); len(bodyReqJson) > 0 {
 		dataRes := &pray_schedule.PrayScheduleData{}
-		rawRes := sendAsPost("/api/pray-schedule", bodyReqJson)
+		rawRes := sendAsPost("/api/pray-schedule", []byte(bodyReqJson))
 		if err := json.Unmarshal(rawRes, dataRes); err != nil {
 			t.Error(err)
 		}
@@ -149,11 +148,9 @@ func TestParseMpmPost(t *testing.T) {
 	req := qris.MpmRequest{
 		Raw: testDataMpm.Raw,
 	}
-	if jsonBody, err := json.Marshal(req); err != nil {
-		t.Error(err)
-	} else {
+	if jsonBody := utils.Jsonify(req); len(jsonBody) > 0 {
 		dataRes := &qris.MpmData{}
-		rawRes := sendAsPost("/api/qris/mpm", jsonBody)
+		rawRes := sendAsPost("/api/qris/mpm", []byte(jsonBody))
 		if err := json.Unmarshal(rawRes, dataRes); err != nil {
 			t.Error(err)
 		} else {
@@ -177,11 +174,9 @@ func TestParseCpmPost(t *testing.T) {
 	req := qris.CpmRequest{
 		Raw: testDataCpm.raw,
 	}
-	if jsonBody, err := json.Marshal(req); err != nil {
-		t.Error(err)
-	} else {
+	if jsonBody := utils.Jsonify(req); len(jsonBody) > 0 {
 		dataRes := &qris.CpmData{}
-		rawRes := sendAsPost("/api/qris/cpm", jsonBody)
+		rawRes := sendAsPost("/api/qris/cpm", []byte(jsonBody))
 		if err := json.Unmarshal(rawRes, dataRes); err != nil {
 			t.Error(err)
 		} else if dataRes.PayloadFormatIndicator == "" || dataRes.ApplicationPAN == "" || dataRes.IssuerURL == "" {

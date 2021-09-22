@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fatalisa-public-api/database/config"
 	"fatalisa-public-api/database/entity"
 	commonSvc "fatalisa-public-api/service/common"
 	"fatalisa-public-api/service/common/pray-schedule"
@@ -16,39 +15,31 @@ type Config struct {
 	Gin *gin.Engine
 }
 
-var HeaderGin = fmt.Sprintf("%-8s", "gin")
-
 func loggerTask(kind string, c *gin.Context) {
-	kind = fmt.Sprintf("%-10s", kind)
+	kindStr := fmt.Sprintf("%-10s", kind)
 	reqMethod := fmt.Sprintf("%-5s", c.Request.Method)
 	reqUri := fmt.Sprintf("%s", c.Request.RequestURI)
-	var statusCode int
-	if kind == "Response" {
-		statusCode = c.Writer.Status()
-	}
+	statusCode := c.Writer.Status()
 	clientIP := fmt.Sprintf("%s", c.ClientIP())
-	log.Info(HeaderGin, "|", kind, clientIP, reqMethod, reqUri, statusCode)
+	log.Info(kindStr, clientIP, reqMethod, reqUri, statusCode)
 	go saveLogToDB(kind, c.Copy())
 }
 
-func saveLogToDB(kind string, ctxCopy *gin.Context) {
+func saveLogToDB(kind string, c *gin.Context) {
 	accessLog := &entity.AccessLog{
-		Kind:     kind,
-		IP:       ctxCopy.ClientIP(),
-		Method:   ctxCopy.Request.Method,
-		FullPath: ctxCopy.FullPath(),
+		Kind:       kind,
+		IP:         c.ClientIP(),
+		Method:     c.Request.Method,
+		FullPath:   c.FullPath(),
+		StatusCode: c.Writer.Status(),
 	}
-	if kind == "Response" {
-		accessLog.StatusCode = ctxCopy.Writer.Status()
-	}
-	//accessLog.WriteLog()
-	config.PutToRedisQueue(&accessLog, entity.AccessLogKey)
+	accessLog.PutToRedisQueue()
 }
 
 func ginCustomLogger(c *gin.Context) {
-	loggerTask("Request", c)
+	loggerTask("Request", c.Copy())
 	c.Next()
-	loggerTask("Response", c)
+	loggerTask("Response", c.Copy())
 }
 
 func ginLogHandler() gin.HandlerFunc {
@@ -68,9 +59,9 @@ func (router *Config) Run() {
 	if !exist {
 		port = "80"
 	}
-	log.Info(HeaderGin, "|", "Service running", port)
+	log.Info("Service running", port)
 	if err := router.Gin.Run(":" + port); err != nil {
-		log.Error(HeaderGin, "|", err)
+		log.Error(err)
 		panic(err)
 	}
 }
@@ -97,48 +88,24 @@ func (router *Config) initApis() {
 	api := router.Gin.Group("/api")
 	{
 		api.GET("/datetime", func(c *gin.Context) {
-			response := commonSvc.DatetimeApi()
-			c.SecureJSON(200, &response)
+			c.SecureJSON(200, commonSvc.DateTimeApiService())
 		})
 		api.GET("/pray-schedule/city-list", func(c *gin.Context) {
 			c.SecureJSON(200, pray_schedule.GetCityList())
 		})
 		api.POST("/pray-schedule", func(c *gin.Context) {
-			jsonBody := &pray_schedule.PrayScheduleReq{}
-			if err := c.BindJSON(jsonBody); err != nil {
-				log.Error(pray_schedule.HeaderPray, "|", err)
-			} else {
-				response := pray_schedule.GetSchedule(jsonBody)
-				c.SecureJSON(200, &response)
-			}
+			c.SecureJSON(200, pray_schedule.GetScheduleService(c))
 		})
 		qrisGroup := api.Group("/qris")
 		{
 			qrisGroup.GET("/mpm/:raw", func(c *gin.Context) {
-				raw := c.Param("raw")
-				result := qrisSvc.MpmData{}
-				result.GetData(raw)
-				c.SecureJSON(200, &result)
+				c.SecureJSON(200, qrisSvc.ParseMpmService(c))
 			})
 			qrisGroup.POST("/mpm", func(c *gin.Context) {
-				mpmReq := &qrisSvc.MpmRequest{}
-				if err := c.BindJSON(mpmReq); err != nil {
-					log.Error(qrisSvc.HeaderMpm, "|", err)
-				} else {
-					result := qrisSvc.MpmData{}
-					result.GetData(mpmReq.Raw)
-					c.SecureJSON(200, &result)
-				}
+				c.SecureJSON(200, qrisSvc.ParseMpmService(c))
 			})
 			qrisGroup.POST("/cpm", func(c *gin.Context) {
-				cpmReq := &qrisSvc.CpmRequest{}
-				if err := c.BindJSON(cpmReq); err != nil {
-					log.Error(qrisSvc.HeaderCpm, "|", err)
-				} else {
-					result := qrisSvc.CpmData{}
-					result.GetData(cpmReq.Raw)
-					c.SecureJSON(200, &result)
-				}
+				c.SecureJSON(200, qrisSvc.ParseCpmService(c))
 			})
 		}
 	}

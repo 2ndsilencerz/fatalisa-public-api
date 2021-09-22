@@ -20,7 +20,7 @@ var ErrorLogKey = "error_log"
 func (errorLog *ErrorLog) WriteToMariaDB() {
 	if db := config.InitMariaDB(); db != nil {
 		if err := db.AutoMigrate(&errorLog); err != nil {
-			log.Error(config.HeaderGorm, "|", err)
+			log.Error(err)
 		}
 		db.Create(&errorLog)
 		config.CloseGorm(db)
@@ -30,7 +30,7 @@ func (errorLog *ErrorLog) WriteToMariaDB() {
 func (errorLog *ErrorLog) WriteToPostgres() {
 	if db := config.InitPostgres(); db != nil {
 		if err := db.AutoMigrate(&errorLog); err != nil {
-			log.Error(config.HeaderGorm, "|", err)
+			log.Error(err)
 		}
 		db.Create(&errorLog)
 		config.CloseGorm(db)
@@ -42,7 +42,7 @@ func (errorLog *ErrorLog) Write(err error) {
 	errorLog.Timestamp = time.Now()
 	uuidGenerated, err := uuid.NewV4()
 	if err != nil {
-		log.Error(config.HeaderGorm, "|", err)
+		log.Error(err)
 	}
 	errorLog.UUID = uuidGenerated
 	config.PutToRedisQueue(&errorLog, ErrorLogKey)
@@ -57,7 +57,7 @@ func (errorLog *ErrorLog) GetFromRedis() {
 	for {
 		if rdb := config.InitRedis(); rdb != nil {
 			ctx := context.Background()
-			rawString := rdb.RPop(ctx, AccessLogKey).Val()
+			rawString := rdb.RPop(ctx, accessLogKey).Val()
 			if len(rawString) > 0 {
 				errorLog = &ErrorLog{}
 				if err := json.Unmarshal([]byte(rawString), errorLog); err != nil {

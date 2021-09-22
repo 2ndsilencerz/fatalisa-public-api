@@ -1,7 +1,7 @@
 package qris
 
 import (
-	"encoding/json"
+	"fatalisa-public-api/service/utils"
 	"github.com/pieterclaerhout/go-log"
 	"testing"
 )
@@ -22,8 +22,7 @@ func init() {
 func TestCpmParse(t *testing.T) {
 	cpmData := &CpmData{}
 	cpmData.GetData(testDataCpm.raw)
-	jsonFormat, _ := json.Marshal(&cpmData)
-	log.Infof(string(jsonFormat))
+	log.Infof(utils.Jsonify(cpmData))
 
 	if cpmData.PayloadFormatIndicator == "" || cpmData.ApplicationPAN == "" || cpmData.IssuerURL == "" {
 		t.Error()

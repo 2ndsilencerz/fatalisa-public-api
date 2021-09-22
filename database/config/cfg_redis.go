@@ -2,8 +2,7 @@ package config
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
+	"fatalisa-public-api/service/utils"
 	"github.com/go-redis/redis/v8"
 	"github.com/pieterclaerhout/go-log"
 	"os"
@@ -15,7 +14,6 @@ type RedisConf struct {
 }
 
 var redisCfg *RedisConf
-var HeaderRedis = fmt.Sprintf("%-8s", "redis")
 
 func (conf *RedisConf) Get() {
 	conf.Host, _ = os.LookupEnv("REDIS_HOST")
@@ -37,13 +35,13 @@ func InitRedis() *redis.Client {
 }
 
 func PutToRedisQueue(v interface{}, key string) {
-	if rawString, err := json.Marshal(v); err != nil {
-		log.Error(key, "|", err)
-	} else if rdb := InitRedis(); rdb != nil {
+	rawString := utils.Jsonify(v)
+	rdb := InitRedis()
+	if len(rawString) > 0 && rdb != nil {
 		defer CloseRedis(rdb)
 		ctx := context.Background()
-		if errorPush := rdb.LPush(ctx, key, string(rawString)).Err(); errorPush != nil {
-			log.Error(HeaderRedis, "|", errorPush)
+		if errorPush := rdb.LPush(ctx, key, rawString).Err(); errorPush != nil {
+			log.Error(errorPush)
 		}
 	}
 }

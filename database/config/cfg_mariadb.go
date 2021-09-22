@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"github.com/pieterclaerhout/go-log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -34,13 +33,10 @@ func InitMariaDB() *gorm.DB {
 	var db *gorm.DB
 	var err error
 	dsn := mariaDbCfg.User + ":" + mariaDbCfg.Pass + "@tcp(" + mariaDbCfg.Host + ":3306)/" + mariaDbCfg.Data
-	//log.Info(HeaderGorm, "|", dsn)
 	if db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	}); err != nil {
-		str := fmt.Sprintf("%-8s", "mariadb")
-		log.Error(str, "|", err)
-		//panic(err)
+		log.Error(err)
 	}
 	return db
 }
