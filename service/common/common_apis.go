@@ -1,7 +1,7 @@
 package common
 
 import (
-	"fatalisa-public-api/service/utils"
+	"fatalisa-public-api/utils"
 	"github.com/pieterclaerhout/go-log"
 	"time"
 )

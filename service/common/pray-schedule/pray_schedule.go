@@ -3,7 +3,7 @@ package pray_schedule
 import (
 	"bytes"
 	"encoding/xml"
-	"fatalisa-public-api/service/utils"
+	"fatalisa-public-api/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/pieterclaerhout/go-log"

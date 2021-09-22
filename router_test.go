@@ -6,7 +6,7 @@ import (
 	"fatalisa-public-api/router"
 	"fatalisa-public-api/service/common/pray-schedule"
 	"fatalisa-public-api/service/qris"
-	"fatalisa-public-api/service/utils"
+	"fatalisa-public-api/utils"
 	"github.com/pieterclaerhout/go-log"
 	"io/ioutil"
 	"net/http"

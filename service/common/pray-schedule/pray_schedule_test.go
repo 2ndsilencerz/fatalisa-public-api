@@ -1,7 +1,7 @@
 package pray_schedule
 
 import (
-	"fatalisa-public-api/service/utils"
+	"fatalisa-public-api/utils"
 	"fmt"
 	"strconv"
 	"strings"

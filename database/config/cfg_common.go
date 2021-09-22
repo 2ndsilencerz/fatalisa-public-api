@@ -2,7 +2,7 @@ package config
 
 import (
 	"context"
-	"fatalisa-public-api/service/utils"
+	"fatalisa-public-api/utils"
 	"github.com/go-redis/redis/v8"
 	"github.com/pieterclaerhout/go-log"
 	"go.mongodb.org/mongo-driver/mongo"

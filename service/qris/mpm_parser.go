@@ -1,7 +1,6 @@
 package qris
 
 import (
-	"fatalisa-public-api/service/utils"
 	"fmt"
 	"github.com/pieterclaerhout/go-log"
 	"strconv"
@@ -112,7 +111,7 @@ func getQrisDataWithoutCrc(mapContent map[string]string) string {
 }
 
 func CompareCrc(mapContent map[string]string, crc string) bool {
-	calculatedSum := utils.CheckSum(getQrisDataWithoutCrc(mapContent))
+	calculatedSum := CheckSum(getQrisDataWithoutCrc(mapContent))
 	return calculatedSum == crc
 }
 
