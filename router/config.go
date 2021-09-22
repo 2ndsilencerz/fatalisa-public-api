@@ -1,9 +1,6 @@
 package router
 
 import (
-	commonSvc "fatalisa-public-api/service/common"
-	"fatalisa-public-api/service/common/pray-schedule"
-	qrisSvc "fatalisa-public-api/service/qris"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/pieterclaerhout/go-log"
@@ -69,43 +66,4 @@ func (router *Config) InitRoutes() {
 	router.initLandingRoute()
 	router.initHealthRoute()
 	router.initApis()
-}
-
-func (router *Config) initLandingRoute() {
-	router.Gin.GET("/", func(c *gin.Context) {
-		c.SecureJSON(200, &commonSvc.Body{Message: "Welcome"})
-	})
-}
-
-func (router *Config) initHealthRoute() {
-	router.Gin.GET("/health", func(c *gin.Context) {
-		c.SecureJSON(200, &commonSvc.Body{Message: "pong"})
-	})
-}
-
-func (router *Config) initApis() {
-	api := router.Gin.Group("/api")
-	{
-		api.GET("/datetime", func(c *gin.Context) {
-			c.SecureJSON(200, commonSvc.DateTimeApiService())
-		})
-		api.GET("/pray-schedule/city-list", func(c *gin.Context) {
-			c.SecureJSON(200, pray_schedule.GetCityList())
-		})
-		api.POST("/pray-schedule", func(c *gin.Context) {
-			c.SecureJSON(200, pray_schedule.GetScheduleService(c))
-		})
-		qrisGroup := api.Group("/qris")
-		{
-			qrisGroup.GET("/mpm/:raw", func(c *gin.Context) {
-				c.SecureJSON(200, qrisSvc.ParseMpmService(c))
-			})
-			qrisGroup.POST("/mpm", func(c *gin.Context) {
-				c.SecureJSON(200, qrisSvc.ParseMpmService(c))
-			})
-			qrisGroup.POST("/cpm", func(c *gin.Context) {
-				c.SecureJSON(200, qrisSvc.ParseCpmService(c))
-			})
-		}
-	}
 }
