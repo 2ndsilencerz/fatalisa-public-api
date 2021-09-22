@@ -12,6 +12,16 @@ import (
 	"time"
 )
 
+var praySchedKey = "pray_schedule_log"
+
+type Tabler interface {
+	TableName() string
+}
+
+func (PrayScheduleLog) TableName() string {
+	return praySchedKey
+}
+
 type PrayScheduleLog struct {
 	gorm.Model
 	UUID             uuid.UUID `json:"uuid" gorm:"column:uuid" bson:"uuid"`

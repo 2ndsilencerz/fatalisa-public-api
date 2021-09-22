@@ -18,7 +18,6 @@ import (
 
 var downloadTask = 0
 var downloadGroup = sync.WaitGroup{}
-var praySchedKey = "sch-log"
 
 const maxDownloadTask = 3
 

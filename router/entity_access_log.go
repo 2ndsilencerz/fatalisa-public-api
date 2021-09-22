@@ -12,6 +12,16 @@ import (
 	"time"
 )
 
+var accessLogKey = "access_log"
+
+type Tabler interface {
+	TableName() string
+}
+
+func (AccessLog) TableName() string {
+	return accessLogKey
+}
+
 /*
 Column name convention used in Gorm.io framework is snake_case
 In-case you want to assign with different name, use tag `gorm:"column:columnName"`
@@ -27,8 +37,6 @@ type AccessLog struct {
 	StatusCode int       `json:"status_code" bson:"status_code"`
 	Created    int64     `gorm:"autoCreateTime,column:created" json:"created" bson:"created"`
 }
-
-var accessLogKey = "access_log"
 
 func (accessLog *AccessLog) WriteToMariaDB() {
 	if db := config.InitMariaDB(); db != nil {

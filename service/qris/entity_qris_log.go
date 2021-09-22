@@ -14,6 +14,14 @@ import (
 
 var qrisKey = "qris"
 
+type Tabler interface {
+	TableName() string
+}
+
+func (Log) TableName() string {
+	return qrisKey
+}
+
 type Log struct {
 	gorm.Model
 	UUID        uuid.UUID   `json:"uuid" bson:"uuid"`
