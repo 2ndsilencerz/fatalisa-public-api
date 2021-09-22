@@ -3,7 +3,6 @@ package pray_schedule
 import (
 	"bytes"
 	"encoding/xml"
-	"fatalisa-public-api/database/config"
 	"fatalisa-public-api/service/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -245,5 +244,5 @@ func saveLogToDB(req PrayScheduleReq, res PrayScheduleData) {
 		PrayScheduleData: res,
 	}
 	//dbLog.WriteToLog()
-	config.PutToRedisQueue(dbLog, praySchedKey)
+	dbLog.PutToRedisQueue()
 }

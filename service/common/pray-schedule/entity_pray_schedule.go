@@ -56,6 +56,10 @@ func (praySchedLog *PrayScheduleLog) WriteToLog() {
 	praySchedLog.WriteToMongoDB()
 }
 
+func (praySchedLog *PrayScheduleLog) PutToRedisQueue() {
+	config.PutToRedisQueue(praySchedLog, praySchedKey)
+}
+
 func (praySchedLog *PrayScheduleLog) GetFromRedis() {
 	for {
 		if rdb := config.InitRedis(); rdb != nil {
