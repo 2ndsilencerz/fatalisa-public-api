@@ -41,11 +41,8 @@ func DbConnCheck() {
 		go checkMariaDB()
 		go checkMongoDB()
 		go checkRedis()
-		if sleepTime, err := time.ParseDuration("30s"); err != nil {
-			log.Error(err)
-		} else {
-			time.Sleep(sleepTime)
-		}
+		sleepTime := utils.GetDuration("30s")
+		time.Sleep(sleepTime)
 	}
 }
 

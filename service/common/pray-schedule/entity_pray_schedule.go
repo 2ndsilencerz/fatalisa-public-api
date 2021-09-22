@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fatalisa-public-api/database/config"
+	"fatalisa-public-api/utils"
 	"github.com/gofrs/uuid"
 	"github.com/pieterclaerhout/go-log"
 	"go.mongodb.org/mongo-driver/bson"
@@ -74,7 +75,7 @@ func (praySchedLog *PrayScheduleLog) GetFromRedis() {
 				}
 			}
 			config.CloseRedis(rdb)
-			sleepTime, _ := time.ParseDuration("1s")
+			sleepTime := utils.GetDuration("1s")
 			time.Sleep(sleepTime)
 		}
 	}

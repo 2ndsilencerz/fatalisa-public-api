@@ -33,11 +33,8 @@ func PraySchedDownload(duration string) {
 				downloadGroup.Wait()
 			}
 		}
-		if sleepTime, err := time.ParseDuration(duration); err != nil {
-			log.Error(err)
-		} else {
-			time.Sleep(sleepTime)
-		}
+		sleepTime := utils.GetDuration(duration)
+		time.Sleep(sleepTime)
 	}
 }
 
