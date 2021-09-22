@@ -4,18 +4,22 @@ import (
 	"context"
 	"encoding/json"
 	"fatalisa-public-api/database/config"
+	"github.com/gofrs/uuid"
 	"github.com/pieterclaerhout/go-log"
 	"go.mongodb.org/mongo-driver/bson"
+	"gorm.io/gorm"
 	"time"
 )
 
 var qrisKey = "qris"
 
 type Log struct {
-	MpmRequest  *MpmRequest `json:"mpmRequest"`
-	MpmResponse *MpmData    `json:"mpmResponse"`
-	CpmRequest  *CpmRequest `json:"cpmRequest"`
-	CpmResponse *CpmData    `json:"cpmResponse"`
+	gorm.Model
+	UUID        uuid.UUID   `json:"uuid" bson:"uuid"`
+	MpmRequest  *MpmRequest `json:"mpmRequest" bson:"mpmRequest"`
+	MpmResponse *MpmData    `json:"mpmResponse" bson:"mpmResponse"`
+	CpmRequest  *CpmRequest `json:"cpmRequest" bson:"cpmRequest"`
+	CpmResponse *CpmData    `json:"cpmResponse" bson:"cpmResponse"`
 }
 
 func (qrisLog *Log) WriteToPostgres() {
