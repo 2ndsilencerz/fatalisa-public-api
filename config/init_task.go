@@ -16,6 +16,10 @@ var downloadRangeTime = "1h"
 func Init() {
 }
 
+func init() {
+	_ = os.Setenv("TZ", "Asia/Jakarta")
+}
+
 // print BUILD_DATE if exist
 func init() {
 	if buildDate, exist := os.LookupEnv("BUILD_DATE"); exist && len(buildDate) > 0 {

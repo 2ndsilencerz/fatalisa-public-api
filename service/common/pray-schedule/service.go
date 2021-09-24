@@ -19,16 +19,19 @@ import (
 var downloadTask = 0
 var downloadGroup = sync.WaitGroup{}
 
-const maxDownloadTask = 3
+const maxSimultaneousDownloadTask = 3
+
+var yearSchedule string
 
 func PraySchedDownload(duration string) {
+	yearSchedule = strconv.Itoa(time.Now().Year())
 	for {
 		log.Info("Downloading pray schedule")
 		for i := 1; i <= 308; i++ {
 			downloadTask++
 			downloadGroup.Add(1)
 			go DownloadFile(i)
-			if downloadTask > maxDownloadTask {
+			if downloadTask > maxSimultaneousDownloadTask {
 				downloadGroup.Wait()
 			}
 		}
@@ -44,7 +47,7 @@ func DownloadFile(x int) {
 	url := "http://jadwalsholat.pkpu.or.id/export.php"
 	contentType := "application/x-www-form-urlencoded"
 	body := "period=3" + "&" +
-		"y=2021" + "&" +
+		"y=" + yearSchedule + "&" +
 		"radio=1" + "&" +
 		"fields_terminated=%3B" + "&" +
 		"fields_enclosed=%22" + "&" +
