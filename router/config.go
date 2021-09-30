@@ -14,7 +14,7 @@ type Config struct {
 
 func loggerTask(kind string, c *gin.Context) {
 	if len(c.Request.RequestURI) > 0 && c.Request.RequestURI != "/health" {
-		log.Info(c.Request)
+		//log.Info(c.Request)
 		kindStr := fmt.Sprintf("%-10s", kind)
 		reqMethod := fmt.Sprintf("%-5s", c.Request.Method)
 		reqUri := fmt.Sprintf("%s", c.Request.RequestURI)
@@ -22,7 +22,7 @@ func loggerTask(kind string, c *gin.Context) {
 		clientIP := fmt.Sprintf("%s", c.ClientIP())
 		// hostHeader useful if we are using nginx port forwarding with following config
 		// proxy_set_header Host $host;
-		hostHeader := c.Request.Header.Get("Host")
+		hostHeader := c.Request.Header.Get("X-Real-Ip")
 		if len(hostHeader) > 0 {
 			clientIP = hostHeader
 		}
