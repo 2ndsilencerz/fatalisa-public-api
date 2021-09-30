@@ -85,4 +85,4 @@ jobs:
         with:
           slot-name: 'vps-production'
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
-          args: apply -f ./manifest/vps/fatalisa-public-api.yaml
+          args: apply -f ./manifests/vps/fatalisa-public-api.yaml
