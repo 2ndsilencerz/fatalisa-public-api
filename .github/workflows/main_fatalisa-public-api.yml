@@ -36,10 +36,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: [
-              "index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:${{ github.sha }}",
-              "index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:latest"
-          ]
+          tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:${{ github.sha }},index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:latest
           file: ./Dockerfile
 
       ## ADDITIONAL FOR LATEST TAG ##
