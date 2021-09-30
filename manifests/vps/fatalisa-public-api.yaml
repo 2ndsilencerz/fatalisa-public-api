@@ -3,6 +3,8 @@ kind: Service
 metadata:
   name: fatalisa-public-api
 spec:
+  externalIPs:
+    - public-ip
   selector:
     app: fatalisa-public-api
   ports:
@@ -32,6 +34,18 @@ spec:
           image: docker.io/account/fatalisa-public-api:latest
           ports:
             - containerPort: 80
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 80
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
           env:
             - name: TZ
               value: Asia/Jakarta
