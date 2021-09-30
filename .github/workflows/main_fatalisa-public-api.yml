@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy container app to Azure Web App - fatalisa-public-api
+name: AIO-Automation
 
 on:
   push:
@@ -9,15 +9,21 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: docker.io
+  # github.repository as <account>/<repo>
+  IMAGE_NAME: silencerz23/fatalisa-public-api
+
 jobs:
   build:
     runs-on: 'ubuntu-latest'
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
     - name: Log in to registry
       uses: docker/login-action@v1
@@ -26,14 +32,22 @@ jobs:
         username: ${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}
         password: ${{ secrets.AzureAppService_ContainerPassword_08d5b821601c455387a9c3c87e7a74ee }}
 
-    - name: Build and push container image to registry
-      uses: docker/build-push-action@v2
-      with:
-        push: true
-        tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:${{ github.sha }}
-        file: ./Dockerfile
+      - name: Build and push container image to registry
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:${{ github.sha }}
+          file: ./Dockerfile
 
-  deploy:
+      ## ADDITIONAL FOR LATEST TAG ##
+      - name: Build and push container image to registry (latest)
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:latest
+          file: ./Dockerfile
+
+  deploy-to-azure:
     runs-on: ubuntu-latest
     needs: build
     environment:
@@ -41,11 +55,32 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-    - name: Deploy to Azure Web App
-      id: deploy-to-webapp
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: 'fatalisa-public-api'
-        slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_133862a254084313924675e43d99351a }}
-        images: 'index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:${{ github.sha }}'
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'fatalisa-public-api'
+          slot-name: 'production'
+          publish-profile: ${{ secrets.AzureAppService_PublishProfile_133862a254084313924675e43d99351a }}
+          images: 'index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:${{ github.sha }}'
+
+  deploy-to-vps:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: write
+      packages: write
+    environment:
+      name: 'vps-production'
+      url: 'https://fatalisa.my.id/'
+
+    steps:
+      - name: Reconfigure image tag
+        run: sed -i "s|docker.io/account/fatalisa-public-api:latest|index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:${{ github.sha }}|g" ./manifest/vps/fatalisa-public-api.yaml
+
+      - name: Deploy to VPS
+        uses: danielr1996/kubectl-action@1.0.0
+        with:
+          slot-name: 'vps-production'
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+          args: apply -f ./manifest/vps/fatalisa-public-api.yaml
