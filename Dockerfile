@@ -9,6 +9,11 @@ RUN go build fatalisa-public-api
 
 FROM alpine:latest
 
+# for timezone setting
+RUN apk update && \
+    apk add --no-cache tzdata && \
+    date
+
 COPY --from=0 /fatalisa-public-api/fatalisa-public-api /app
 RUN chmod -R +x /app
 ENV GIN_MODE release
