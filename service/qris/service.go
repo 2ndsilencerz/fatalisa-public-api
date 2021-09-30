@@ -4,6 +4,7 @@ import (
 	"fatalisa-public-api/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/pieterclaerhout/go-log"
+	"time"
 )
 
 func ParseMpmService(c *gin.Context) *MpmData {
@@ -22,6 +23,7 @@ func ParseMpmService(c *gin.Context) *MpmData {
 	qrisLog := &Log{
 		MpmRequest:  req,
 		MpmResponse: res,
+		Created:     time.Now(),
 	}
 	qrisLog.PutToRedisQueue()
 	return res
@@ -41,6 +43,7 @@ func ParseCpmService(c *gin.Context) *CpmData {
 	qrisLog := &Log{
 		CpmRequest:  req,
 		CpmResponse: res,
+		Created:     time.Now(),
 	}
 	qrisLog.PutToRedisQueue()
 	return res

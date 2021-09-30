@@ -241,6 +241,7 @@ func saveLogToDB(req PrayScheduleReq, res PrayScheduleData) {
 		UUID:             uuidGenerated,
 		PrayScheduleReq:  req,
 		PrayScheduleData: res,
+		Created:          time.Now(),
 	}
 	//dbLog.WriteToLog()
 	dbLog.PutToRedisQueue()

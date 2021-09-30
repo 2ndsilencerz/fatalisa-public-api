@@ -1,13 +1,9 @@
 package qris
 
 import (
-	"context"
-	"encoding/json"
 	"fatalisa-public-api/database/config"
 	"fatalisa-public-api/utils"
 	"github.com/gofrs/uuid"
-	"github.com/pieterclaerhout/go-log"
-	"go.mongodb.org/mongo-driver/bson"
 	"gorm.io/gorm"
 	"time"
 )
@@ -25,42 +21,26 @@ func (Log) TableName() string {
 type Log struct {
 	gorm.Model
 	UUID        uuid.UUID   `json:"uuid" bson:"uuid"`
-	MpmRequest  *MpmRequest `json:"mpmRequest" bson:"mpmRequest"`
-	MpmResponse *MpmData    `json:"mpmResponse" bson:"mpmResponse"`
-	CpmRequest  *CpmRequest `json:"cpmRequest" bson:"cpmRequest"`
-	CpmResponse *CpmData    `json:"cpmResponse" bson:"cpmResponse"`
+	MpmRequest  *MpmRequest `json:"mpmRequest" bson:"mpmRequest" gorm:"embedded"`
+	MpmResponse *MpmData    `json:"mpmResponse" bson:"mpmResponse" gorm:"embedded"`
+	CpmRequest  *CpmRequest `json:"cpmRequest" bson:"cpmRequest" gorm:"embedded"`
+	CpmResponse *CpmData    `json:"cpmResponse" bson:"cpmResponse" gorm:"embedded"`
+	Created     time.Time   `json:"created"`
 }
 
 func (qrisLog *Log) WriteToPostgres() {
-	if db := config.InitMariaDB(); db != nil {
-		defer config.CloseGorm(db)
-		if err := db.AutoMigrate(&qrisLog); err != nil {
-			log.Error(err)
-		}
-		db.Create(&qrisLog)
-	}
+	db := config.InitMariaDB()
+	db.Write(qrisLog)
 }
 
 func (qrisLog *Log) WriteToMariaDB() {
-	if db := config.InitPostgres(); db != nil {
-		defer config.CloseGorm(db)
-		if err := db.AutoMigrate(&qrisLog); err != nil {
-			log.Error(err)
-		}
-		db.Create(&qrisLog)
-	}
+	db := config.InitPostgres()
+	db.Write(qrisLog)
 }
 
 func (qrisLog *Log) WriteToMongoDB() {
-	if db, ctx, conf := config.InitMongoDB(); db != nil {
-		defer config.CloseMongo(db, ctx)
-		praySchedLog := db.Database(conf.Data).Collection(qrisKey)
-		if bsonData, err := bson.Marshal(&praySchedLog); err != nil {
-			log.Error(err)
-		} else if _, err := praySchedLog.InsertOne(ctx, bsonData); err != nil {
-			log.Error(err)
-		}
-	}
+	db := config.InitMongoDB()
+	db.InsertOne(qrisKey, qrisLog)
 }
 
 func (qrisLog *Log) WriteToLog() {
@@ -70,25 +50,20 @@ func (qrisLog *Log) WriteToLog() {
 }
 
 func (qrisLog *Log) PutToRedisQueue() {
-	config.PutToRedisQueue(qrisLog, qrisKey)
+	rdb := config.InitRedis()
+	rdb.PushQueue(qrisKey, qrisLog)
 }
 
 func (qrisLog *Log) GetFromRedis() {
 	for {
-		if rdb := config.InitRedis(); rdb != nil {
-			ctx := context.Background()
-			rawString := rdb.RPop(ctx, qrisKey).Val()
-			if len(rawString) > 0 {
-				qrisLog = &Log{}
-				if err := json.Unmarshal([]byte(rawString), qrisLog); err != nil {
-					log.Error(err)
-				} else {
-					qrisLog.WriteToLog()
-				}
-			}
-			config.CloseRedis(rdb)
-			sleepTime := utils.GetDuration("1s")
-			time.Sleep(sleepTime)
+		rdb := config.InitRedis()
+		if rdb.PopQueue(qrisKey, qrisLog); len(utils.Jsonify(qrisLog.MpmRequest)) > 2 || len(utils.Jsonify(qrisLog.CpmRequest)) > 2 {
+			qrisLog.WriteToLog()
 		}
+		// since they use same address for storing the data, we need to reinstate
+		// so the next data fetched will be fresh
+		qrisLog = &Log{}
+		//sleepTime := utils.GetDuration("1s")
+		//time.Sleep(sleepTime)
 	}
 }

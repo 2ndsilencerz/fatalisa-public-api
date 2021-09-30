@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fatalisa-public-api/common"
 	dbCfg "fatalisa-public-api/database/config"
 	"fatalisa-public-api/router"
 	prayScheduleSvc "fatalisa-public-api/service/common/pray-schedule"
@@ -10,14 +9,9 @@ import (
 	"os"
 )
 
-//var headerCfg = fmt.Sprintf("%-8s", "svc-cfg")
-var downloadRangeTime = "1h"
+var downloadRangeTime = "6h"
 
 func Init() {
-}
-
-func init() {
-	_ = os.Setenv("TZ", "Asia/Jakarta")
 }
 
 // print BUILD_DATE if exist
@@ -50,8 +44,8 @@ func init() {
 	praySchedLog := &prayScheduleSvc.PrayScheduleLog{}
 	go praySchedLog.GetFromRedis()
 
-	errorLog := &common.ErrorLog{}
-	go errorLog.GetFromRedis()
+	//errorLog := &common.ErrorLog{}
+	//go errorLog.GetFromRedis()
 
 	qrisLog := &qrisSvc.Log{}
 	go qrisLog.GetFromRedis()
@@ -61,14 +55,3 @@ func init() {
 func init() {
 	go prayScheduleSvc.PraySchedDownload(downloadRangeTime)
 }
-
-//// print config list
-//func init() {
-//	cfg := &config.List{}
-//	cfg.Get()
-//	if content, err := json.Marshal(cfg); err != nil {
-//		log.Error(headerCfg, "|", err)
-//	} else {
-//		log.Info(headerCfg, "|", string(content))
-//	}
-//}

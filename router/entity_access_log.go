@@ -1,13 +1,9 @@
 package router
 
 import (
-	"context"
-	"encoding/json"
 	"fatalisa-public-api/database/config"
-	"fatalisa-public-api/utils"
 	"github.com/gofrs/uuid"
 	"github.com/pieterclaerhout/go-log"
-	"go.mongodb.org/mongo-driver/bson"
 	"gorm.io/gorm"
 	"time"
 )
@@ -35,39 +31,22 @@ type AccessLog struct {
 	Method     string    `json:"method" bson:"method"`
 	FullPath   string    `json:"full_path" bson:"full_path"`
 	StatusCode int       `json:"status_code" bson:"status_code"`
-	Created    int64     `gorm:"autoCreateTime,column:created" json:"created" bson:"created"`
+	Created    time.Time `gorm:"column:created" json:"created" bson:"created"` //gorm:"autoCreateTime,column:created"
 }
 
 func (accessLog *AccessLog) WriteToMariaDB() {
-	if db := config.InitMariaDB(); db != nil {
-		defer config.CloseGorm(db)
-		if err := db.AutoMigrate(&accessLog); err != nil {
-			log.Error(err)
-		}
-		db.Create(&accessLog)
-	}
+	db := config.InitMariaDB()
+	db.Write(accessLog)
 }
 
 func (accessLog *AccessLog) WriteToPostgres() {
-	if db := config.InitPostgres(); db != nil {
-		defer config.CloseGorm(db)
-		if err := db.AutoMigrate(&accessLog); err != nil {
-			log.Error(err)
-		}
-		db.Create(&accessLog)
-	}
+	db := config.InitPostgres()
+	db.Write(accessLog)
 }
 
 func (accessLog *AccessLog) WriteToMongoDB() {
-	if db, ctx, conf := config.InitMongoDB(); db != nil {
-		defer config.CloseMongo(db, ctx)
-		accessLogCol := db.Database(conf.Data).Collection(accessLogKey)
-		if bsonData, err := bson.Marshal(&accessLog); err != nil {
-			log.Error(err)
-		} else if _, err := accessLogCol.InsertOne(ctx, bsonData); err != nil {
-			log.Error(err)
-		}
-	}
+	db := config.InitMongoDB()
+	db.InsertOne(accessLogKey, accessLog)
 }
 
 func (accessLog *AccessLog) WriteLog() {
@@ -82,26 +61,22 @@ func (accessLog *AccessLog) WriteLog() {
 }
 
 func (accessLog *AccessLog) PutToRedisQueue() {
-	config.PutToRedisQueue(accessLog, accessLogKey)
+	rdb := config.InitRedis()
+	rdb.PushQueue(accessLogKey, accessLog)
 }
 
 func (accessLog *AccessLog) GetFromRedis() {
 	for {
-		if rdb := config.InitRedis(); rdb != nil {
-			ctx := context.Background()
-			rawString := rdb.RPop(ctx, accessLogKey).Val()
-			if len(rawString) > 0 {
-				accessLog = &AccessLog{}
-				if err := json.Unmarshal([]byte(rawString), accessLog); err != nil {
-					log.Error(err)
-				} else {
-					accessLog.WriteLog()
-				}
-			}
-			config.CloseRedis(rdb)
-			sleepTime := utils.GetDuration("1s")
-			time.Sleep(sleepTime)
+		rdb := config.InitRedis()
+		rdb.PopQueue(accessLogKey, accessLog)
+		if len(accessLog.Kind) > 0 {
+			accessLog.WriteLog()
 		}
+		// since they use same address for storing the data, we need to reinstate
+		// so the next data fetched will be fresh
+		accessLog = &AccessLog{}
+		//sleepTime := utils.GetDuration("1s")
+		//time.Sleep(sleepTime)
 	}
 }
 
