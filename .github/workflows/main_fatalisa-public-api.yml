@@ -78,7 +78,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Reconfigure image tag
-        run: sed -i "s|docker.io/account/fatalisa-public-api:latest|index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:${{ github.sha }}|g" ./manifest/vps/fatalisa-public-api.yaml
+        run: ls && sed -i "s|docker.io/account/fatalisa-public-api:latest|index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:${{ github.sha }}|g" ./manifest/vps/fatalisa-public-api.yaml
 
       - name: Deploy to VPS
         uses: danielr1996/kubectl-action@1.0.0
