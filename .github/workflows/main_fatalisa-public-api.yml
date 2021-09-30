@@ -25,12 +25,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-    - name: Log in to registry
-      uses: docker/login-action@v1
-      with:
-        registry: https://index.docker.io/v1/
-        username: ${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}
-        password: ${{ secrets.AzureAppService_ContainerPassword_08d5b821601c455387a9c3c87e7a74ee }}
+      - name: Log in to registry
+        uses: docker/login-action@v1
+        with:
+          registry: https://index.docker.io/v1/
+          username: ${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}
+          password: ${{ secrets.AzureAppService_ContainerPassword_08d5b821601c455387a9c3c87e7a74ee }}
 
       - name: Build and push container image to registry
         uses: docker/build-push-action@v2
