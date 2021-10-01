@@ -13,6 +13,18 @@ spec:
       targetPort: 80
   type: LoadBalancer
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fatalisa-public-api
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: managed-nfs-storage
+  resources:
+    requests:
+      storage: 100Mi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,7 +32,7 @@ metadata:
   labels:
     app: fatalisa-public-api
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: fatalisa-public-api
@@ -29,6 +41,10 @@ spec:
       labels:
         app: fatalisa-public-api
     spec:
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: fatalisa-public-api
       containers:
         - name: fatalisa-public-api
           image: docker.io/account/fatalisa-public-api:latest
@@ -139,3 +155,6 @@ spec:
                 secretKeyRef:
                   name: fatalisa
                   key: CONSUL_PORT
+          volumeMounts:
+            - name: data
+              mountPath: /schedule

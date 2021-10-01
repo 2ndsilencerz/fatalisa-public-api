@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pieterclaerhout/go-log"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -17,25 +18,49 @@ import (
 
 var downloadTask = 0
 var downloadGroup = sync.WaitGroup{}
+var scheduleHourDownload = []int{0, 6, 12, 18}
+
+const filenamePrefix = "schedule/jadwal-"
+const filenameExtension = ".xml"
+const totalSchedules = 308
 
 const maxSimultaneousDownloadTask = 3
 
 var yearSchedule string
 
-func PraySchedDownload(duration string) {
-	yearSchedule = strconv.Itoa(time.Now().Year())
+func checkTime(currentTime time.Time) bool {
+	for _, v := range scheduleHourDownload {
+		if v == currentTime.Hour() && currentTime.Minute() == 0 && currentTime.Second() == 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func scheduleFilesExist() bool {
+	if fileList, err := ioutil.ReadDir("/schedule"); err != nil {
+		log.Error(err)
+	} else if len(fileList) > 0 {
+		return true
+	}
+	return false
+}
+
+func PraySchedDownload() {
 	for {
-		log.Info("Downloading pray schedule")
-		for i := 1; i <= 308; i++ {
-			downloadTask++
-			downloadGroup.Add(1)
-			go DownloadFile(i)
-			if downloadTask > maxSimultaneousDownloadTask {
-				downloadGroup.Wait()
+		currentTime := time.Now()
+		yearSchedule = strconv.Itoa(currentTime.Year())
+		if checkTime(currentTime) || !scheduleFilesExist() {
+			log.Info("Downloading pray schedule")
+			for i := 1; i <= totalSchedules; i++ {
+				downloadTask++
+				downloadGroup.Add(1)
+				go DownloadFile(i)
+				if downloadTask > maxSimultaneousDownloadTask {
+					downloadGroup.Wait()
+				}
 			}
 		}
-		sleepTime := utils.GetDuration(duration)
-		time.Sleep(sleepTime)
 	}
 }
 
@@ -86,7 +111,7 @@ func DownloadFile(x int) {
 		log.Error(err)
 	} else {
 		// Create file
-		fileName := "jadwal-" + strconv.Itoa(x) + ".xml"
+		fileName := filenamePrefix + strconv.Itoa(x) + filenameExtension
 		file, errFileCreate := os.Create(fileName)
 		if errFileCreate != nil {
 			log.Error(errFileCreate)
@@ -107,7 +132,7 @@ func DownloadFile(x int) {
 
 			// Rename the file
 			data = readFile(fileName)
-			newFileName := "jadwal-" + data.City + ".xml"
+			newFileName := filenamePrefix + data.City + filenameExtension
 			if errRenameFile := os.Rename(fileName, newFileName); errRenameFile != nil {
 				log.Error(errRenameFile)
 			}
@@ -186,7 +211,7 @@ type city struct {
 
 func getSchedule(req *PrayScheduleReq) *PrayScheduleData {
 	responseData := &PrayScheduleData{}
-	fileName := "jadwal-" + req.City + ".xml"
+	fileName := filenamePrefix + req.City + filenameExtension
 	if data := readFile(fileName); data.Version != "" && data.City == req.City {
 		for i := 0; i < len(data.Data); i++ {
 			date, _ := time.Parse("2006/01/02", req.Date)

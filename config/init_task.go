@@ -6,8 +6,6 @@ import (
 	"os"
 )
 
-var downloadRangeTime = "6h"
-
 func Init() {
 }
 
@@ -50,5 +48,5 @@ func init() {
 
 // run scheduled download for certain time
 func init() {
-	go prayScheduleSvc.PraySchedDownload(downloadRangeTime)
+	go prayScheduleSvc.PraySchedDownload()
 }
