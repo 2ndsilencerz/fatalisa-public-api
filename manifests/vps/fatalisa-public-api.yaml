@@ -50,16 +50,16 @@ spec:
           image: docker.io/account/fatalisa-public-api:latest
           ports:
             - containerPort: 80
-          startupProbe:
-            httpGet:
-              path: /health
-              port: 80
-            timeoutSeconds: 5
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 80
-            timeoutSeconds: 5
+          #          startupProbe:
+          #            httpGet:
+          #              path: /health
+          #              port: 80
+          #            timeoutSeconds: 5
+          #          livenessProbe:
+          #            httpGet:
+          #              path: /health
+          #              port: 80
+          #            timeoutSeconds: 5
           readinessProbe:
             httpGet:
               path: /health
