@@ -9,6 +9,10 @@ import (
 func Init() {
 }
 
+func init() {
+	_, _ = os.LookupEnv("TZ")
+}
+
 // print BUILD_DATE if exist
 func init() {
 	if buildDate, exist := os.LookupEnv("BUILD_DATE"); exist && len(buildDate) > 0 {
@@ -46,7 +50,7 @@ func init() {
 //	go qrisLog.GetFromRedis()
 //}
 
-// run scheduled download for certain time
+// run scheduled download
 func init() {
-	go prayScheduleSvc.PraySchedDownload()
+	go prayScheduleSvc.ScheduleDownload()
 }

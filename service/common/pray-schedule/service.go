@@ -5,9 +5,9 @@ import (
 	"encoding/xml"
 	"fatalisa-public-api/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/go-co-op/gocron"
 	"github.com/pieterclaerhout/go-log"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -18,65 +18,55 @@ import (
 
 var downloadTask = 0
 var downloadGroup = sync.WaitGroup{}
-var scheduleHourDownload = []int{0, 6, 12, 18}
 
-const filenamePrefix = "schedule/jadwal-"
+const scheduleFilesDir = "schedule/"
+const filenamePrefix = "jadwal-"
 const filenameExtension = ".xml"
 const totalSchedules = 308
 
 const maxSimultaneousDownloadTask = 3
 
 var yearSchedule string
-var IsDownloaded = false
 
-func checkTime(currentTime time.Time) bool {
-	for _, v := range scheduleHourDownload {
-		if v == currentTime.Hour() && currentTime.Minute() == 0 && currentTime.Second() == 0 {
-			IsDownloaded = false
-			return true
-		}
+func ScheduleDownload() {
+	var err error
+	s1 := gocron.NewScheduler(time.UTC)
+	s2 := gocron.NewScheduler(time.UTC)
+	s3 := gocron.NewScheduler(time.UTC)
+	s4 := gocron.NewScheduler(time.UTC)
+	time1, _ := time.Parse("15:04:05", "00:00:00")
+	time2, _ := time.Parse("15:04:05", "06:00:00")
+	time3, _ := time.Parse("15:04:05", "12:00:00")
+	time4, _ := time.Parse("15:04:05", "18:00:00")
+	if _, err = s1.Every(1).Days().StartAt(time1).Do(PraySchedDownload); err != nil {
+		log.Error(err)
 	}
-	return false
-}
-
-func scheduleFilesExist() bool {
-	var exist = true
-	if !IsDownloaded {
-		if fileList, err := ioutil.ReadDir("schedule"); err != nil {
-			log.Error(err)
-		} else if len(fileList) > 0 && len(fileList) >= totalSchedules {
-			exist = true
-			IsDownloaded = true
-		} else {
-			log.Info("Not all schedule exist")
-			exist = false
-		}
+	if _, err = s2.Every(1).Days().StartAt(time2).Do(PraySchedDownload); err != nil {
+		log.Error(err)
 	}
-	return exist
+	if _, err = s3.Every(1).Days().StartAt(time3).Do(PraySchedDownload); err != nil {
+		log.Error(err)
+	}
+	if _, err = s4.Every(1).Days().StartAt(time4).Do(PraySchedDownload); err != nil {
+		log.Error(err)
+	}
+	s1.StartAsync()
+	s2.StartAsync()
+	s3.StartAsync()
+	s4.StartAsync()
 }
 
 func PraySchedDownload() {
-	// initial check
-	scheduleFilesExist()
-
-	for {
-		currentTime := time.Now()
-		yearSchedule = strconv.Itoa(currentTime.Year())
-		if checkTime(currentTime) || !scheduleFilesExist() {
-			log.Info("Downloading pray schedule")
-			for i := 1; i <= totalSchedules; i++ {
-				downloadTask++
-				downloadGroup.Add(1)
-				go DownloadFile(i)
-				if downloadTask > maxSimultaneousDownloadTask {
-					downloadGroup.Wait()
-				}
-			}
+	log.Infof("%s %v", "Downloading pray schedule at", time.Now())
+	for i := 1; i <= totalSchedules; i++ {
+		downloadTask++
+		downloadGroup.Add(1)
+		go DownloadFile(i)
+		if downloadTask > maxSimultaneousDownloadTask {
+			downloadGroup.Wait()
 		}
-		for downloadTask > 0 {
-		}
-		IsDownloaded = true
 	}
+	downloadGroup.Wait()
 }
 
 func DownloadFile(x int) {
@@ -126,7 +116,7 @@ func DownloadFile(x int) {
 		log.Error(err)
 	} else {
 		// Create file
-		fileName := filenamePrefix + strconv.Itoa(x) + filenameExtension
+		fileName := scheduleFilesDir + filenamePrefix + strconv.Itoa(x) + filenameExtension
 		file, errFileCreate := os.Create(fileName)
 		if errFileCreate != nil {
 			log.Error(errFileCreate)
@@ -147,7 +137,7 @@ func DownloadFile(x int) {
 
 			// Rename the file
 			data = readFile(fileName)
-			newFileName := filenamePrefix + data.City + filenameExtension
+			newFileName := scheduleFilesDir + filenamePrefix + data.City + filenameExtension
 			if errRenameFile := os.Rename(fileName, newFileName); errRenameFile != nil {
 				log.Error(errRenameFile)
 			}
@@ -226,7 +216,7 @@ type city struct {
 
 func getSchedule(req *PrayScheduleReq) *PrayScheduleData {
 	responseData := &PrayScheduleData{}
-	fileName := filenamePrefix + req.City + filenameExtension
+	fileName := scheduleFilesDir + filenamePrefix + req.City + filenameExtension
 	if data := readFile(fileName); data.Version != "" && data.City == req.City {
 		for i := 0; i < len(data.Data); i++ {
 			date, _ := time.Parse("2006/01/02", req.Date)
@@ -255,13 +245,13 @@ func GetScheduleService(c *gin.Context) *PrayScheduleData {
 
 func GetCityList() interface{} {
 	res := &CityListRes{}
-	if files, err := os.ReadDir("."); err != nil {
+	if files, err := os.ReadDir(scheduleFilesDir); err != nil {
 		log.Error(err)
 	} else {
 		for _, file := range files {
-			if strings.Contains(file.Name(), "jadwal-") {
-				cityName := strings.ReplaceAll(file.Name(), "jadwal-", "")
-				cityName = strings.ReplaceAll(cityName, ".xml", "")
+			if strings.Contains(file.Name(), filenamePrefix) {
+				cityName := strings.ReplaceAll(file.Name(), filenamePrefix, "")
+				cityName = strings.ReplaceAll(cityName, filenameExtension, "")
 				city := &city{}
 				city.CityName = cityName
 				res.List = append(res.List, city)
