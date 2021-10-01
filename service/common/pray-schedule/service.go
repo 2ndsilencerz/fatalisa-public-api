@@ -40,7 +40,7 @@ func checkTime(currentTime time.Time) bool {
 func scheduleFilesExist() bool {
 	if fileList, err := ioutil.ReadDir("/schedule"); err != nil {
 		log.Error(err)
-	} else if len(fileList) > 0 && len(fileList) == totalSchedules {
+	} else if len(fileList) > 0 && len(fileList) == totalSchedules-1 {
 		return true
 	}
 	return false
