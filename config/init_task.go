@@ -1,7 +1,6 @@
 package config
 
 import (
-	prayScheduleSvc "fatalisa-public-api/service/common/pray-schedule"
 	"github.com/pieterclaerhout/go-log"
 	"os"
 )
@@ -51,6 +50,6 @@ func init() {
 //}
 
 // run scheduled download
-func init() {
-	go prayScheduleSvc.ScheduleDownload()
-}
+//func init() {
+//	go prayScheduleSvc.ScheduleDownload()
+//}

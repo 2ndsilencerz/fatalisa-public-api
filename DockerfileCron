@@ -1,0 +1,17 @@
+FROM golang:alpine
+COPY . /fatalisa-public-api
+WORKDIR /fatalisa-public-api
+RUN go build -o cronjob fatalisa-public-api/cron
+
+FROM alpine:latest
+RUN apk update && \
+    apk add --no-cache tzdata && \
+    date
+
+COPY --from=0 /fatalisa-public-api/cronjob /cronjob
+RUN chmod -R +x /cronjob
+
+COPY set-build-date.sh /set-build-date.sh
+RUN chmod +x /set-build-date.sh && /set-build-date.sh
+
+ENTRYPOINT ["/cronjob"]

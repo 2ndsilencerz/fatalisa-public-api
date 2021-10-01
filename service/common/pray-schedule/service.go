@@ -5,7 +5,6 @@ import (
 	"encoding/xml"
 	"fatalisa-public-api/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/go-co-op/gocron"
 	"github.com/pieterclaerhout/go-log"
 	"io"
 	"net/http"
@@ -28,33 +27,33 @@ const maxSimultaneousDownloadTask = 3
 
 var yearSchedule string
 
-func ScheduleDownload() {
-	var err error
-	s1 := gocron.NewScheduler(time.UTC)
-	s2 := gocron.NewScheduler(time.UTC)
-	s3 := gocron.NewScheduler(time.UTC)
-	s4 := gocron.NewScheduler(time.UTC)
-	time1, _ := time.Parse("15:04:05", "00:00:00")
-	time2, _ := time.Parse("15:04:05", "06:00:00")
-	time3, _ := time.Parse("15:04:05", "12:00:00")
-	time4, _ := time.Parse("15:04:05", "18:00:00")
-	if _, err = s1.Every(1).Days().StartAt(time1).Do(PraySchedDownload); err != nil {
-		log.Error(err)
-	}
-	if _, err = s2.Every(1).Days().StartAt(time2).Do(PraySchedDownload); err != nil {
-		log.Error(err)
-	}
-	if _, err = s3.Every(1).Days().StartAt(time3).Do(PraySchedDownload); err != nil {
-		log.Error(err)
-	}
-	if _, err = s4.Every(1).Days().StartAt(time4).Do(PraySchedDownload); err != nil {
-		log.Error(err)
-	}
-	s1.StartAsync()
-	s2.StartAsync()
-	s3.StartAsync()
-	s4.StartAsync()
-}
+//func ScheduleDownload() {
+//	var err error
+//	s1 := gocron.NewScheduler(time.UTC)
+//	s2 := gocron.NewScheduler(time.UTC)
+//	s3 := gocron.NewScheduler(time.UTC)
+//	s4 := gocron.NewScheduler(time.UTC)
+//	time1, _ := time.Parse("15:04:05", "00:00:00")
+//	time2, _ := time.Parse("15:04:05", "06:00:00")
+//	time3, _ := time.Parse("15:04:05", "12:00:00")
+//	time4, _ := time.Parse("15:04:05", "18:00:00")
+//	if _, err = s1.Every(1).Days().StartAt(time1).Do(PraySchedDownload); err != nil {
+//		log.Error(err)
+//	}
+//	if _, err = s2.Every(1).Days().StartAt(time2).Do(PraySchedDownload); err != nil {
+//		log.Error(err)
+//	}
+//	if _, err = s3.Every(1).Days().StartAt(time3).Do(PraySchedDownload); err != nil {
+//		log.Error(err)
+//	}
+//	if _, err = s4.Every(1).Days().StartAt(time4).Do(PraySchedDownload); err != nil {
+//		log.Error(err)
+//	}
+//	s1.StartAsync()
+//	s2.StartAsync()
+//	s3.StartAsync()
+//	s4.StartAsync()
+//}
 
 func PraySchedDownload() {
 	log.Infof("%s %v", "Downloading pray schedule at", time.Now())

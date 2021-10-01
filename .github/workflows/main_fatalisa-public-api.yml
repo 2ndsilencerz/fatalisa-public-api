@@ -32,12 +32,19 @@ jobs:
           username: ${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}
           password: ${{ secrets.AzureAppService_ContainerPassword_08d5b821601c455387a9c3c87e7a74ee }}
 
-      - name: Build and push container image to registry
+      - name: Build and push main container image to registry
         uses: docker/build-push-action@v2
         with:
           push: true
           tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:${{ github.sha }},index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:latest
           file: ./Dockerfile
+
+      - name: Build and push cron container image to registry
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:cron-${{ github.sha }},index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:cron-latest
+          file: ./DockerfileCron
 
       ## ADDITIONAL FOR LATEST TAG ##
   #      - name: Build and push container image to registry (latest)
@@ -77,8 +84,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Reconfigure image tag
+      - name: Reconfigure main image tag
         run: sed -i "s|docker.io/account/fatalisa-public-api:latest|index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:${{ github.sha }}|g" ./manifests/vps/fatalisa-public-api.yaml
+
+      - name: Reconfigure cron image tag
+        run: sed -i "s|docker.io/account/fatalisa-public-api:cron-latest|index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:cron-${{ github.sha }}|g" ./manifests/vps/fatalisa-public-api.yaml
 
       - name: Reconfigure service
         run: sed -i "s|public-ip|${{ secrets.VPS_IP }}|g" ./manifests/vps/fatalisa-public-api.yaml

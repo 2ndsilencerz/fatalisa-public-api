@@ -158,3 +158,25 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /schedule
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: fatalisa-public-api-cron-schedule-download
+spec:
+  schedule: "0 */6 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: fatalisa-public-api
+          containers:
+            - name: fatalisa-public-api-cron
+              image: docker.io/account/fatalisa-public-api:cron-latest
+              volumeMounts:
+                - name: data
+                  mountPath: /schedule
+          restartPolicy: OnFailure
