@@ -1,10 +1,7 @@
 package config
 
 import (
-	dbCfg "fatalisa-public-api/database/config"
-	"fatalisa-public-api/router"
 	prayScheduleSvc "fatalisa-public-api/service/common/pray-schedule"
-	qrisSvc "fatalisa-public-api/service/qris"
 	"github.com/pieterclaerhout/go-log"
 	"os"
 )
@@ -31,25 +28,25 @@ func init() {
 }
 
 // run scheduled DB check on another routine
-func init() {
-	// run DB connection check async
-	go dbCfg.DbConnCheck()
-}
+//func init() {
+//	// run DB connection check async
+//	go dbCfg.DbConnCheck()
+//}
 
 // run redis queue checker per entity
-func init() {
-	accessLog := &router.AccessLog{}
-	go accessLog.GetFromRedis()
-
-	praySchedLog := &prayScheduleSvc.PrayScheduleLog{}
-	go praySchedLog.GetFromRedis()
-
-	//errorLog := &common.ErrorLog{}
-	//go errorLog.GetFromRedis()
-
-	qrisLog := &qrisSvc.Log{}
-	go qrisLog.GetFromRedis()
-}
+//func init() {
+//	accessLog := &router.AccessLog{}
+//	go accessLog.GetFromRedis()
+//
+//	praySchedLog := &prayScheduleSvc.PrayScheduleLog{}
+//	go praySchedLog.GetFromRedis()
+//
+//	//errorLog := &common.ErrorLog{}
+//	//go errorLog.GetFromRedis()
+//
+//	qrisLog := &qrisSvc.Log{}
+//	go qrisLog.GetFromRedis()
+//}
 
 // run scheduled download for certain time
 func init() {

@@ -75,4 +75,5 @@ func (conf *RedisConf) PopQueue(key string, v interface{}) {
 			}
 		}
 	}
+	v = nil
 }

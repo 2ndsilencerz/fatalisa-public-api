@@ -4,11 +4,7 @@ import (
 	"fmt"
 	"github.com/pieterclaerhout/go-log"
 	"strconv"
-	"sync"
 )
-
-var waitGroup = sync.WaitGroup{}
-var totalGoRoutine = 0
 
 // SEPARATOR only used as key in map for subId
 const SEPARATOR = ""
@@ -38,10 +34,7 @@ func parseMPM(rawData string, rootId string) {
 			putContentMpm(rootId+SEPARATOR+expectedId, data)
 
 			if rootId == "" && isRootIdHaveSubId(currentId) {
-				totalGoRoutine++
-				waitGroup.Add(1)
-				go getSubContentMpm(data, currentId)
-				waitGroup.Wait()
+				getSubContentMpm(data, currentId)
 			}
 			rawData = stripContent(rawData, len(data))
 		} else {
@@ -52,11 +45,6 @@ func parseMPM(rawData string, rootId string) {
 		if indexId == MaxIndex {
 			break
 		}
-	}
-
-	if totalGoRoutine > 0 {
-		waitGroup.Done()
-		totalGoRoutine--
 	}
 }
 

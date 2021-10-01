@@ -5,7 +5,6 @@ import (
 	"encoding/xml"
 	"fatalisa-public-api/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/gofrs/uuid"
 	"github.com/pieterclaerhout/go-log"
 	"io"
 	"net/http"
@@ -177,6 +176,10 @@ type PrayScheduleReq struct {
 	Date string `json:"date" binding:"required"`
 }
 
+type CityListRes struct {
+	List []*city `json:"list"`
+}
+
 type city struct {
 	CityName string `json:"cityName"`
 }
@@ -194,7 +197,6 @@ func getSchedule(req *PrayScheduleReq) *PrayScheduleData {
 			}
 		}
 	}
-	go saveLogToDB(*req, *responseData)
 	return responseData
 }
 
@@ -212,9 +214,7 @@ func GetScheduleService(c *gin.Context) *PrayScheduleData {
 }
 
 func GetCityList() interface{} {
-	res := struct {
-		List []*city `json:"list"`
-	}{}
+	res := &CityListRes{}
 	if files, err := os.ReadDir("."); err != nil {
 		log.Error(err)
 	} else {
@@ -222,27 +222,12 @@ func GetCityList() interface{} {
 			if strings.Contains(file.Name(), "jadwal-") {
 				cityName := strings.ReplaceAll(file.Name(), "jadwal-", "")
 				cityName = strings.ReplaceAll(cityName, ".xml", "")
-				res.List = append(res.List, &city{
-					CityName: cityName,
-				})
+				city := &city{}
+				city.CityName = cityName
+				res.List = append(res.List, city)
 			}
 		}
 	}
 	log.Info(utils.Jsonify(res))
 	return res
-}
-
-func saveLogToDB(req PrayScheduleReq, res PrayScheduleData) {
-	uuidGenerated, err := uuid.NewV4()
-	if err != nil {
-		log.Error(err)
-	}
-	dbLog := &PrayScheduleLog{
-		UUID:             uuidGenerated,
-		PrayScheduleReq:  req,
-		PrayScheduleData: res,
-		Created:          time.Now(),
-	}
-	//dbLog.WriteToLog()
-	dbLog.PutToRedisQueue()
 }
