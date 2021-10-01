@@ -62,7 +62,8 @@ func PraySchedDownload() {
 				}
 			}
 		}
-		downloadGroup.Wait()
+		for downloadTask > 0 {
+		}
 	}
 }
 
