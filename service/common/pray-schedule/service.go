@@ -27,10 +27,12 @@ const totalSchedules = 308
 const maxSimultaneousDownloadTask = 3
 
 var yearSchedule string
+var IsDownloaded = false
 
 func checkTime(currentTime time.Time) bool {
 	for _, v := range scheduleHourDownload {
 		if v == currentTime.Hour() && currentTime.Minute() == 0 && currentTime.Second() == 0 {
+			IsDownloaded = false
 			return true
 		}
 	}
@@ -38,16 +40,25 @@ func checkTime(currentTime time.Time) bool {
 }
 
 func scheduleFilesExist() bool {
-	if fileList, err := ioutil.ReadDir("/schedule"); err != nil {
-		log.Error(err)
-	} else if len(fileList) > 0 && len(fileList) >= totalSchedules {
-		return true
+	var exist = true
+	if !IsDownloaded {
+		if fileList, err := ioutil.ReadDir("schedule"); err != nil {
+			log.Error(err)
+		} else if len(fileList) > 0 && len(fileList) >= totalSchedules {
+			exist = true
+			IsDownloaded = true
+		} else {
+			log.Info("Not all schedule exist")
+			exist = false
+		}
 	}
-	log.Info("Not all schedule exist")
-	return false
+	return exist
 }
 
 func PraySchedDownload() {
+	// initial check
+	scheduleFilesExist()
+
 	for {
 		currentTime := time.Now()
 		yearSchedule = strconv.Itoa(currentTime.Year())
@@ -64,6 +75,7 @@ func PraySchedDownload() {
 		}
 		for downloadTask > 0 {
 		}
+		IsDownloaded = true
 	}
 }
 
