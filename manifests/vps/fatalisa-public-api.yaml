@@ -155,6 +155,11 @@ spec:
                 secretKeyRef:
                   name: fatalisa
                   key: CONSUL_PORT
+            # POD
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
           volumeMounts:
             - name: data
               mountPath: /schedule
@@ -179,4 +184,6 @@ spec:
               volumeMounts:
                 - name: data
                   mountPath: /schedule
+                - name: data
+                  mountPath: /data
           restartPolicy: OnFailure

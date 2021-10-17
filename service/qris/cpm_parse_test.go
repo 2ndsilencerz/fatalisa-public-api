@@ -2,7 +2,7 @@ package qris
 
 import (
 	"fatalisa-public-api/utils"
-	"github.com/pieterclaerhout/go-log"
+	"github.com/subchen/go-log"
 	"testing"
 )
 

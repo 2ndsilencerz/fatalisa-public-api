@@ -2,7 +2,7 @@ package qris
 
 import (
 	"fmt"
-	"github.com/pieterclaerhout/go-log"
+	"github.com/subchen/go-log"
 	"strconv"
 )
 

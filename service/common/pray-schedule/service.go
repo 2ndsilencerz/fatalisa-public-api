@@ -5,7 +5,7 @@ import (
 	"encoding/xml"
 	"fatalisa-public-api/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/pieterclaerhout/go-log"
+	"github.com/subchen/go-log"
 	"io"
 	"net/http"
 	"os"
@@ -140,7 +140,7 @@ func DownloadFile(x int) {
 			if errRenameFile := os.Rename(fileName, newFileName); errRenameFile != nil {
 				log.Error(errRenameFile)
 			}
-			log.Info("Pray schedule", data.City, "downloaded")
+			log.Info("Pray schedule ", data.City, " downloaded")
 		}
 		closeResForDownload(res)
 	}
@@ -152,13 +152,13 @@ func DownloadFile(x int) {
 }
 
 func readFile(fileName string) *Header {
-	res := &Header{}
+	res := Header{}
 	if file, errRead := os.ReadFile(fileName); errRead != nil {
 		log.Error(errRead)
-	} else if errParse := xml.Unmarshal(file, res); errParse != nil {
+	} else if errParse := xml.Unmarshal(file, &res); errParse != nil {
 		log.Error(errParse)
 	}
-	return res
+	return &res
 }
 
 func closeResForDownload(response *http.Response) {
@@ -214,7 +214,7 @@ type city struct {
 }
 
 func getSchedule(req *PrayScheduleReq) *PrayScheduleData {
-	responseData := &PrayScheduleData{}
+	responseData := PrayScheduleData{}
 	fileName := scheduleFilesDir + filenamePrefix + req.City + filenameExtension
 	if data := readFile(fileName); data.Version != "" && data.City == req.City {
 		for i := 0; i < len(data.Data); i++ {
@@ -222,28 +222,31 @@ func getSchedule(req *PrayScheduleReq) *PrayScheduleData {
 			if data.Data[i].Year == date.Format("2006") &&
 				data.Data[i].Month == date.Format("01") &&
 				data.Data[i].Date == date.Format("02") {
-				responseData = &data.Data[i]
+				responseData = data.Data[i]
 			}
 		}
 	}
-	return responseData
+	return &responseData
 }
 
 func GetScheduleService(c *gin.Context) *PrayScheduleData {
-	req := &PrayScheduleReq{}
-	if err := c.BindJSON(req); err != nil {
+	req := PrayScheduleReq{}
+	// replace from BindJSON to ShouldBinJSON, so we should handle the error ourselves
+	if err := c.ShouldBindJSON(req); err != nil {
 		log.Error(err)
-	} else {
-		log.Info(utils.Jsonify(req))
+		log.Warn("Request method is GET")
+		req.City = c.Param("city")
+		req.Date = time.Now().Format("2006/01/02")
 	}
+	log.Info(utils.Jsonify(req))
 
-	res := getSchedule(req)
+	res := getSchedule(&req)
 	log.Info(utils.Jsonify(res))
 	return res
 }
 
 func GetCityList() interface{} {
-	res := &CityListRes{}
+	res := CityListRes{}
 	if files, err := os.ReadDir(scheduleFilesDir); err != nil {
 		log.Error(err)
 	} else {
@@ -258,5 +261,5 @@ func GetCityList() interface{} {
 		}
 	}
 	log.Info(utils.Jsonify(res))
-	return res
+	return &res
 }

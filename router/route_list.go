@@ -19,6 +19,12 @@ func (router *Config) initHealthRoute() {
 	})
 }
 
+func (router *Config) versionChecker() {
+	router.Gin.GET("/version", func(c *gin.Context) {
+		c.SecureJSON(200, commonSvc.VersionChecker())
+	})
+}
+
 func (router *Config) initApis() {
 	api := router.Gin.Group("/api")
 	{
@@ -27,6 +33,9 @@ func (router *Config) initApis() {
 		})
 		api.GET("/pray-schedule/city-list", func(c *gin.Context) {
 			c.SecureJSON(200, prayScheduleSvc.GetCityList())
+		})
+		api.GET("/pray-schedule/:city", func(c *gin.Context) {
+			c.SecureJSON(200, prayScheduleSvc.GetScheduleService(c))
 		})
 		api.POST("/pray-schedule", func(c *gin.Context) {
 			c.SecureJSON(200, prayScheduleSvc.GetScheduleService(c))

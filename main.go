@@ -3,7 +3,7 @@ package main
 import (
 	"fatalisa-public-api/config"
 	"fatalisa-public-api/router"
-	"github.com/pieterclaerhout/go-log"
+	"github.com/subchen/go-log"
 )
 
 func init() {
@@ -11,7 +11,7 @@ func init() {
 }
 
 func main() {
-	// any code after routerInit.Run() won't be executed, place it in init() above
+	// any code after routerInit.Run() won't be executed, place it in init_task.go inside config
 	log.Info("Starting service")
 	routerInit := &router.Config{}
 	routerInit.Run()

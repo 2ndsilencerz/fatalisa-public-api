@@ -1,7 +1,10 @@
 package config
 
 import (
-	"github.com/pieterclaerhout/go-log"
+	"fatalisa-public-api/utils"
+	"github.com/subchen/go-log"
+	"github.com/subchen/go-log/writers"
+	"io"
 	"os"
 )
 
@@ -15,17 +18,20 @@ func init() {
 // print BUILD_DATE if exist
 func init() {
 	if buildDate, exist := os.LookupEnv("BUILD_DATE"); exist && len(buildDate) > 0 {
-		log.Info("This image built in", buildDate)
+		log.Info("This image built in ", buildDate)
 	}
 }
 
 // set logger format
 func init() {
-	log.DebugMode = false
-	log.DebugSQLMode = false
-	log.PrintTimestamp = true
-	log.PrintColors = true
-	log.TimeFormat = "2006/01/02 15:04:05 -0700"
+	log.Default.Out = io.MultiWriter(
+		os.Stdout,
+		&writers.DailyFileWriter{
+			Name:     utils.FileLogName,
+			MaxCount: 10,
+		},
+	)
+	log.Default.Formatter = new(utils.LogFormat)
 }
 
 // run scheduled DB check on another routine

@@ -2,7 +2,10 @@ package utils
 
 import (
 	"encoding/json"
-	"github.com/pieterclaerhout/go-log"
+	"github.com/subchen/go-log"
+	"math/rand"
+	"os"
+	"strconv"
 	"time"
 )
 
@@ -15,12 +18,22 @@ func Jsonify(v interface{}) string {
 	return string(j)
 }
 
-func GetDuration(duration string) time.Duration {
-	var res time.Duration
-	var err error
-	res, err = time.ParseDuration(duration)
-	if err != nil {
-		log.Error(err)
+//func GetDuration(duration string) time.Duration {
+//	var res time.Duration
+//	var err error
+//	res, err = time.ParseDuration(duration)
+//	if err != nil {
+//		log.Error(err)
+//	}
+//	return res
+//}
+
+func GetPodName() string {
+	str := ""
+	exist := false
+	rand.Seed(time.Now().UnixNano())
+	if str, exist = os.LookupEnv("POD_NAME"); !exist {
+		str = time.Now().Format("2006-01-02") + "-" + strconv.Itoa(rand.Int())
 	}
-	return res
+	return str
 }

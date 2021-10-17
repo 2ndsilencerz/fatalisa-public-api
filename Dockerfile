@@ -21,7 +21,7 @@ ENV GIN_MODE release
 COPY set-build-date.sh /set-build-date.sh
 RUN chmod +x /set-build-date.sh && /set-build-date.sh
 
-RUN mkdir /schedule
+RUN mkdir -p /schedule /data/logs
 
 EXPOSE 80
 ENTRYPOINT ["/app"]

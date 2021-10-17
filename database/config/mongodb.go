@@ -3,7 +3,7 @@ package config
 import (
 	"context"
 	"fatalisa-public-api/utils"
-	"github.com/pieterclaerhout/go-log"
+	"github.com/subchen/go-log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

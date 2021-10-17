@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fatalisa-public-api/utils"
 	"github.com/go-redis/redis/v8"
-	"github.com/pieterclaerhout/go-log"
+	"github.com/subchen/go-log"
 	"os"
 )
 

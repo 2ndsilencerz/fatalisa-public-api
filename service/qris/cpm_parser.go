@@ -3,7 +3,7 @@ package qris
 import (
 	"encoding/base64"
 	"encoding/hex"
-	"github.com/pieterclaerhout/go-log"
+	"github.com/subchen/go-log"
 	"regexp"
 	"strconv"
 	"strings"
