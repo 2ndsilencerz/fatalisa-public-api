@@ -18,7 +18,7 @@ import (
 var downloadTask = 0
 var downloadGroup = sync.WaitGroup{}
 
-const scheduleFilesDir = "schedule/"
+const ScheduleFilesDir = "schedule/"
 const filenamePrefix = "jadwal-"
 const filenameExtension = ".xml"
 const totalSchedules = 308
@@ -115,7 +115,7 @@ func DownloadFile(x int) {
 		log.Error(err)
 	} else {
 		// Create file
-		fileName := scheduleFilesDir + filenamePrefix + strconv.Itoa(x) + filenameExtension
+		fileName := ScheduleFilesDir + filenamePrefix + strconv.Itoa(x) + filenameExtension
 		file, errFileCreate := os.Create(fileName)
 		if errFileCreate != nil {
 			log.Error(errFileCreate)
@@ -136,7 +136,7 @@ func DownloadFile(x int) {
 
 			// Rename the file
 			data = readFile(fileName)
-			newFileName := scheduleFilesDir + filenamePrefix + data.City + filenameExtension
+			newFileName := ScheduleFilesDir + filenamePrefix + data.City + filenameExtension
 			if errRenameFile := os.Rename(fileName, newFileName); errRenameFile != nil {
 				log.Error(errRenameFile)
 			}
@@ -215,7 +215,7 @@ type city struct {
 
 func getSchedule(req *PrayScheduleReq) *PrayScheduleData {
 	responseData := PrayScheduleData{}
-	fileName := scheduleFilesDir + filenamePrefix + req.City + filenameExtension
+	fileName := ScheduleFilesDir + filenamePrefix + req.City + filenameExtension
 	if data := readFile(fileName); data.Version != "" && data.City == req.City {
 		for i := 0; i < len(data.Data); i++ {
 			date, _ := time.Parse("2006/01/02", req.Date)
@@ -247,7 +247,7 @@ func GetScheduleService(c *gin.Context) *PrayScheduleData {
 
 func GetCityList() interface{} {
 	res := CityListRes{}
-	if files, err := os.ReadDir(scheduleFilesDir); err != nil {
+	if files, err := os.ReadDir(ScheduleFilesDir); err != nil {
 		log.Error(err)
 	} else {
 		for _, file := range files {

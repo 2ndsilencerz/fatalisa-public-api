@@ -37,3 +37,10 @@ func GetPodName() string {
 	}
 	return str
 }
+
+func Mkdir(location string) {
+	err := os.Mkdir(location, os.FileMode(777))
+	if err != nil {
+		log.Error(err)
+	}
+}

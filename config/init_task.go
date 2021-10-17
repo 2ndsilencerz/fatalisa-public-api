@@ -1,6 +1,7 @@
 package config
 
 import (
+	pray_schedule "fatalisa-public-api/service/common/pray-schedule"
 	"fatalisa-public-api/utils"
 	"github.com/subchen/go-log"
 	"github.com/subchen/go-log/writers"
@@ -19,6 +20,18 @@ func init() {
 func init() {
 	if buildDate, exist := os.LookupEnv("BUILD_DATE"); exist && len(buildDate) > 0 {
 		log.Info("This image built in ", buildDate)
+	}
+}
+
+// check directory if exist
+func init() {
+	if _, err := os.Stat(utils.FileLogLocation); err != nil {
+		log.Error(err)
+		utils.Mkdir(utils.FileLogLocation)
+	}
+	if _, err := os.Stat(pray_schedule.ScheduleFilesDir); err != nil {
+		log.Error(err)
+		utils.Mkdir(pray_schedule.ScheduleFilesDir)
 	}
 }
 
