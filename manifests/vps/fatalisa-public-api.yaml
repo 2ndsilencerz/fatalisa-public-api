@@ -163,6 +163,8 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /schedule
+            - name: data
+              mountPath: /data
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -184,6 +186,4 @@ spec:
               volumeMounts:
                 - name: data
                   mountPath: /schedule
-                - name: data
-                  mountPath: /data
           restartPolicy: OnFailure
