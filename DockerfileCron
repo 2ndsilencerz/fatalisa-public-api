@@ -6,7 +6,7 @@ RUN go build -o cronjob fatalisa-public-api/cron
 FROM alpine:latest
 RUN apk update && \
     apk add --no-cache tzdata && \
-    date \
+    date
 
 ENV TZ 'Asia/Jakarta'
 
