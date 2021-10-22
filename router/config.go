@@ -20,7 +20,7 @@ func ginLoggerTask(kind string, c *gin.Context) {
 		reqUri := fmt.Sprintf("%-10s ", c.Request.RequestURI)
 		statusCode := fmt.Sprintf("%-3s ", strconv.Itoa(c.Writer.Status()))
 		clientIP := fmt.Sprintf("%-16s ", c.ClientIP())
-		hostHeader := c.Request.Header.Get("X-Real-Ip")
+		hostHeader := fmt.Sprintf("%-16s ", c.Request.Header.Get("X-Real-Ip"))
 		if len(hostHeader) > 0 {
 			clientIP = hostHeader
 		}
