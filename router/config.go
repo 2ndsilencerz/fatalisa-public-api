@@ -16,7 +16,7 @@ type Config struct {
 func ginLoggerTask(kind string, c *gin.Context) {
 	if len(c.Request.RequestURI) > 0 && c.Request.RequestURI != "/health" {
 		kindStr := fmt.Sprintf("%-10s", kind)
-		reqMethod := fmt.Sprintf("%-6s", c.Request.Method)
+		reqMethod := fmt.Sprintf("%-10s", c.Request.Method)
 		reqUri := fmt.Sprintf("%-10s ", c.Request.RequestURI)
 		statusCode := fmt.Sprintf("%-3s ", strconv.Itoa(c.Writer.Status()))
 		clientIP := fmt.Sprintf("%-16s ", c.ClientIP())
