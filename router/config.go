@@ -77,5 +77,5 @@ func increaseAccessCounter() {
 		currentValue = 0
 	}
 	currentValue++
-	redis.Put(accessCounterKey, strconv.Itoa(currentValue))
+	redis.Set(accessCounterKey, strconv.Itoa(currentValue))
 }

@@ -73,12 +73,12 @@ func (conf *RedisConf) PopQueue(key string, v interface{}) {
 	v = nil
 }
 
-func (conf *RedisConf) Put(key string, value string) bool {
+func (conf *RedisConf) Set(key string, value string) bool {
 	rdb := InitRedis()
 	ctx := context.Background()
 	added := false
 	if rdb.connected(ctx) && len(value) > 0 {
-		err := rdb.Client.Append(ctx, key, value).Err()
+		err := rdb.Client.Set(ctx, key, value, 0).Err()
 		if err != nil {
 			log.Error(err)
 		} else {
