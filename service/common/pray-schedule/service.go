@@ -232,7 +232,7 @@ func getSchedule(req *PrayScheduleReq) *PrayScheduleData {
 func GetScheduleService(c *gin.Context) *PrayScheduleData {
 	req := PrayScheduleReq{}
 	// replace from BindJSON to ShouldBinJSON, so we should handle the error ourselves
-	if err := c.ShouldBindJSON(req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		log.Error(err)
 		log.Warn("Request method is GET")
 		req.City = c.Param("city")
