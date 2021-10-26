@@ -10,7 +10,7 @@ func ParseMpmService(c *gin.Context) *MpmData {
 	req := MpmRequest{}
 	if len(c.Param("raw")) > 0 {
 		req.Raw = c.Param("raw")
-	} else if err := c.BindJSON(req); err != nil {
+	} else if err := c.BindJSON(&req); err != nil {
 		log.Error(err)
 	} else {
 		log.Info(utils.Jsonify(req))
@@ -24,7 +24,7 @@ func ParseMpmService(c *gin.Context) *MpmData {
 
 func ParseCpmService(c *gin.Context) *CpmData {
 	req := CpmRequest{}
-	if err := c.BindJSON(req); err != nil {
+	if err := c.BindJSON(&req); err != nil {
 		log.Error(err)
 	} else {
 		log.Info(req)
