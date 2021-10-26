@@ -98,7 +98,7 @@ func (conf *RedisConf) Get(key string) string {
 		if err != nil {
 			log.Error(err)
 		} else {
-			result = cmd.String()
+			result = cmd.Val()
 		}
 	}
 	return result

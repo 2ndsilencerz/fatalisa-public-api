@@ -72,8 +72,10 @@ func (router *Config) InitRoutes() {
 
 func increaseAccessCounter() {
 	redis := config.InitRedis()
-	currentValue, err := strconv.Atoi(redis.Get(accessCounterKey))
+	val := redis.Get(accessCounterKey)
+	currentValue, err := strconv.Atoi(val)
 	if err != nil {
+		log.Error(err)
 		currentValue = 0
 	}
 	currentValue++
