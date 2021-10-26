@@ -2,7 +2,7 @@ package config
 
 import (
 	"fatalisa-public-api/service/common"
-	pray_schedule "fatalisa-public-api/service/common/pray-schedule"
+	prayschedule "fatalisa-public-api/service/common/pray-schedule"
 	"fatalisa-public-api/utils"
 	"github.com/subchen/go-log"
 	"github.com/subchen/go-log/writers"
@@ -44,9 +44,9 @@ func init() {
 		log.Error(err)
 		utils.Mkdir(utils.FileLogLocation)
 	}
-	if _, err := os.Stat(pray_schedule.ScheduleFilesDir); err != nil {
+	if _, err := os.Stat(prayschedule.ScheduleFilesDir); err != nil {
 		log.Error(err)
-		utils.Mkdir(pray_schedule.ScheduleFilesDir)
+		utils.Mkdir(prayschedule.ScheduleFilesDir)
 	}
 }
 
