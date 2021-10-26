@@ -13,6 +13,18 @@ import (
 func Init() {
 }
 
+// set logger format
+func init() {
+	log.Default.Out = io.MultiWriter(
+		os.Stdout,
+		&writers.DailyFileWriter{
+			Name:     utils.FileLogName,
+			MaxCount: 10,
+		},
+	)
+	log.Default.Formatter = new(utils.LogFormat)
+}
+
 func init() {
 	_, _ = os.LookupEnv("TZ")
 }
@@ -36,18 +48,6 @@ func init() {
 		log.Error(err)
 		utils.Mkdir(pray_schedule.ScheduleFilesDir)
 	}
-}
-
-// set logger format
-func init() {
-	log.Default.Out = io.MultiWriter(
-		os.Stdout,
-		&writers.DailyFileWriter{
-			Name:     utils.FileLogName,
-			MaxCount: 10,
-		},
-	)
-	log.Default.Formatter = new(utils.LogFormat)
 }
 
 // run scheduled DB check on another routine
