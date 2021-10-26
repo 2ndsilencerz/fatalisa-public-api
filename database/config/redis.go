@@ -105,7 +105,7 @@ func (conf *RedisConf) Get(key string) string {
 }
 
 func (conf *RedisConf) connected(ctx context.Context) bool {
-	if err := conf.Client.Ping(ctx); err != nil {
+	if err := conf.Client.Ping(ctx).Err(); err != nil {
 		log.Error(err)
 		return false
 	}
