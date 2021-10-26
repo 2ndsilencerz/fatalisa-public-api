@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fatalisa-public-api/database/config"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/subchen/go-log"
@@ -8,6 +9,8 @@ import (
 	"os"
 	"strconv"
 )
+
+const accessCounterKey = "accessCounter"
 
 type Config struct {
 	Gin *gin.Engine
@@ -32,6 +35,7 @@ func ginCustomLogger(c *gin.Context) {
 	ginLoggerTask("Request", c)
 	c.Next()
 	ginLoggerTask("Response", c)
+	increaseAccessCounter()
 }
 
 func ginLogHandler() gin.HandlerFunc {
@@ -64,4 +68,14 @@ func (router *Config) InitRoutes() {
 	router.initHealthRoute()
 	router.versionChecker()
 	router.initApis()
+}
+
+func increaseAccessCounter() {
+	redis := config.InitRedis()
+	currentValue, err := strconv.Atoi(redis.Get(accessCounterKey))
+	if err != nil {
+		currentValue = 0
+	}
+	currentValue++
+	redis.Put(accessCounterKey, strconv.Itoa(currentValue))
 }
