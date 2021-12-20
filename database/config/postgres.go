@@ -1,21 +1,20 @@
 package config
 
 import (
+	"fatalisa-public-api/database"
+	"github.com/subchen/go-log"
 	"gorm.io/gorm"
 	"os"
 )
 
 type PostgresConf struct {
-	Host   string   `json:"host"`
-	User   string   `json:"user"`
-	Pass   string   `json:"pass"`
-	Data   string   `json:"data"`
+	database.DBConf
 	Client *gorm.DB `json:"client"`
 }
 
 var postgresCfg *PostgresConf
 
-func (conf *PostgresConf) Get() {
+func (conf *PostgresConf) GetSettings() {
 	conf.Host, _ = os.LookupEnv("POSTGRES_HOST")
 	conf.User, _ = os.LookupEnv("POSTGRES_USER")
 	conf.Pass, _ = os.LookupEnv("POSTGRES_PASS")
@@ -25,7 +24,7 @@ func (conf *PostgresConf) Get() {
 func InitPostgres() *PostgresConf {
 	if postgresCfg == nil || postgresCfg.Client == nil {
 		postgresCfg = &PostgresConf{}
-		postgresCfg.Get()
+		postgresCfg.GetSettings()
 
 		var db *gorm.DB
 		//var err error
@@ -52,11 +51,24 @@ func checkPostgres() {
 	}
 }
 
-func (conf *PostgresConf) Write(v interface{}) {
+func (conf *PostgresConf) AutoMigrate(v interface{}) {
 	if conf.Client != nil && v != nil {
-		//if err := conf.Client.AutoMigrate(v); err != nil {
-		//	log.Error(err)
-		//}
-		//conf.Client.Create(&v)
+		if err := conf.Client.AutoMigrate(v); err != nil {
+			log.Error(err)
+		}
 	}
 }
+
+func (conf *PostgresConf) Write(v interface{}) {
+	if conf.Client != nil && v != nil {
+		if err := conf.Client.Create(&v); err != nil {
+			log.Error(err)
+		}
+	}
+}
+
+//func (conf *PostgresConf) Select(v interface{}, query ...interface{}) {
+//	if conf.Client != nil && v != nil {
+//		conf.Client.Find(&v, query)
+//	}
+//}

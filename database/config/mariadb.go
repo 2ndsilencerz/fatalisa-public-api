@@ -1,21 +1,20 @@
 package config
 
 import (
+	"fatalisa-public-api/database"
+	"github.com/subchen/go-log"
 	"gorm.io/gorm"
 	"os"
 )
 
 type MariaDBConf struct {
-	Host   string   `json:"host"`
-	User   string   `json:"user"`
-	Pass   string   `json:"pass"`
-	Data   string   `json:"data"`
+	database.DBConf
 	Client *gorm.DB `json:"client"`
 }
 
 var mariaDbCfg *MariaDBConf
 
-func (conf *MariaDBConf) Get() {
+func (conf *MariaDBConf) GetSettings() {
 	conf.Host, _ = os.LookupEnv("MARIADB_HOST")
 	conf.User, _ = os.LookupEnv("MARIADB_USER")
 	conf.Pass, _ = os.LookupEnv("MARIADB_PASS")
@@ -25,7 +24,7 @@ func (conf *MariaDBConf) Get() {
 func InitMariaDB() *MariaDBConf {
 	if mariaDbCfg == nil || mariaDbCfg.Client == nil {
 		mariaDbCfg = &MariaDBConf{}
-		mariaDbCfg.Get()
+		mariaDbCfg.GetSettings()
 
 		var db *gorm.DB
 		//var err error
@@ -48,11 +47,24 @@ func checkMariaDB() {
 	}
 }
 
-func (conf *MariaDBConf) Write(v interface{}) {
+func (conf *MariaDBConf) AutoMigrate(v interface{}) {
 	if conf.Client != nil && v != nil {
-		//if err := conf.Client.AutoMigrate(v); err != nil {
-		//	log.Error(err)
-		//}
-		//conf.Client.Create(&v)
+		if err := conf.Client.AutoMigrate(v); err != nil {
+			log.Error(err)
+		}
 	}
 }
+
+func (conf *MariaDBConf) Write(v interface{}) {
+	if conf.Client != nil && v != nil {
+		if err := conf.Client.Create(&v); err != nil {
+			log.Error(err)
+		}
+	}
+}
+
+//func (conf *MariaDBConf) Select(v interface{}, query string) {
+//	if conf.Client != nil && v != nil {
+//		conf.Client.Select(&v, query)
+//	}
+//}

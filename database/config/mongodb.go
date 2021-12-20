@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"fatalisa-public-api/database"
 	"fatalisa-public-api/utils"
 	"github.com/subchen/go-log"
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,17 +12,14 @@ import (
 )
 
 type MongoDBConf struct {
-	Host    string          `json:"host"`
-	User    string          `json:"user"`
-	Pass    string          `json:"pass"`
-	Data    string          `json:"data"`
+	database.DBConf
 	Client  *mongo.Client   `json:"client"`
 	Context context.Context `json:"context"`
 }
 
 var mongoDbConf *MongoDBConf
 
-func (conf *MongoDBConf) Get() {
+func (conf *MongoDBConf) GetSettings() {
 	conf.Host, _ = os.LookupEnv("MONGODB_HOST")
 	conf.User, _ = os.LookupEnv("MONGODB_USER")
 	conf.Pass, _ = os.LookupEnv("MONGODB_PASS")
@@ -32,7 +30,7 @@ func (conf *MongoDBConf) Get() {
 func InitMongoDB() *MongoDBConf {
 	if mongoDbConf == nil || mongoDbConf.Client == nil {
 		mongoDbConf = &MongoDBConf{}
-		mongoDbConf.Get()
+		mongoDbConf.GetSettings()
 
 		var db *mongo.Client
 		var err error
@@ -63,10 +61,11 @@ func checkMongoDB() {
 
 func (conf *MongoDBConf) InsertOne(collection string, v interface{}) {
 	if conf.Client != nil && v != nil {
-		accessLogCol := conf.Client.Database(conf.Data).Collection(collection)
+
+		selectedCollection := conf.Client.Database(conf.Data).Collection(collection)
 		if bsonData, err := bson.Marshal(v); err != nil {
 			log.Error(err)
-		} else if _, err := accessLogCol.InsertOne(conf.Context, bsonData); err != nil {
+		} else if _, err := selectedCollection.InsertOne(conf.Context, bsonData); err != nil {
 			log.Error(err)
 		}
 	}

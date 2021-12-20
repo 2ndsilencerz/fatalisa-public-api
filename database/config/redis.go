@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"encoding/json"
+	"fatalisa-public-api/database"
 	"fatalisa-public-api/utils"
 	"github.com/go-redis/redis/v8"
 	"github.com/subchen/go-log"
@@ -10,26 +11,25 @@ import (
 )
 
 type RedisConf struct {
-	Host     string        `json:"host"`
-	Password string        `json:"password"`
-	Client   *redis.Client `json:"client"`
+	database.DBConf
+	Client *redis.Client `json:"client"`
 }
 
 var redisCfg *RedisConf
 
-func (conf *RedisConf) GetConfig() {
+func (conf *RedisConf) GetSettings() {
 	conf.Host, _ = os.LookupEnv("REDIS_HOST")
-	conf.Password, _ = os.LookupEnv("REDIS_PASS")
+	conf.Pass, _ = os.LookupEnv("REDIS_PASS")
 }
 
 func InitRedis() *RedisConf {
 	if redisCfg == nil || redisCfg.Client == nil {
 		redisCfg = &RedisConf{}
-		redisCfg.GetConfig()
+		redisCfg.GetSettings()
 
 		rdb := redis.NewClient(&redis.Options{
 			Addr:     redisCfg.Host + ":6379",
-			Password: redisCfg.Password,
+			Password: redisCfg.Pass,
 			DB:       0,
 		})
 		redisCfg.Client = rdb
