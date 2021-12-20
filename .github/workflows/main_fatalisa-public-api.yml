@@ -24,10 +24,14 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
 
+      - name: build
+        run: go build -v .
+
       - name: test
         run: go test -v ./...
 
   build:
+    needs: test
     runs-on: 'ubuntu-latest'
 
     steps:
