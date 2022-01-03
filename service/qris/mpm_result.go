@@ -1,6 +1,9 @@
 package qris
 
-import "fmt"
+import (
+	"fatalisa-public-api/database/config"
+	"fmt"
+)
 
 type MpmRequest struct {
 	Raw string `json:"raw" binding:"required"`
@@ -135,4 +138,15 @@ func (data *MpmData) getBit64Contents(qrisParsed map[string]string) {
 func (data *MpmData) GetData(raw string) {
 	qrisParsed := GetResultMpm(raw)
 	data.setContents(qrisParsed)
+}
+
+func (data *MpmData) SaveToDB() {
+	mariaDB := config.InitMariaDB()
+	mariaDB.Write(data)
+
+	postgres := config.InitPostgres()
+	postgres.Write(data)
+
+	mongo := config.InitMongoDB()
+	mongo.InsertOne("MPM", data)
 }
