@@ -88,31 +88,31 @@ jobs:
           publish-profile: ${{ secrets.AzureAppService_PublishProfile_133862a254084313924675e43d99351a }}
           images: 'index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:${{ github.sha }}'
 
-  deploy-to-vps:
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      contents: write
-      packages: write
-    environment:
-      name: 'vps-production'
-      url: 'https://fatalisa.my.id/'
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Reconfigure main image tag
-        run: sed -i "s|docker.io/account/fatalisa-public-api:latest|index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:${{ github.sha }}|g" ./manifests/vps/fatalisa-public-api.yaml
-
-      - name: Reconfigure cron image tag
-        run: sed -i "s|docker.io/account/fatalisa-public-api:cron-latest|index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:cron-${{ github.sha }}|g" ./manifests/vps/fatalisa-public-api.yaml
-
-      - name: Reconfigure service
-        run: sed -i "s|public-ip|${{ secrets.VPS_IP }}|g" ./manifests/vps/fatalisa-public-api.yaml
-
-      - name: Deploy to VPS
-        uses: danielr1996/kubectl-action@1.0.0
-        with:
-          slot-name: 'vps-production'
-          kubeconfig: ${{ secrets.KUBE_CONFIG }}
-          args: apply -f ./manifests/vps/fatalisa-public-api.yaml
+#  deploy-to-vps:
+#    runs-on: ubuntu-latest
+#    needs: build
+#    permissions:
+#      contents: write
+#      packages: write
+#    environment:
+#      name: 'vps-production'
+#      url: 'https://fatalisa.my.id/'
+#
+#    steps:
+#      - uses: actions/checkout@v2
+#
+#      - name: Reconfigure main image tag
+#        run: sed -i "s|docker.io/account/fatalisa-public-api:latest|index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:${{ github.sha }}|g" ./manifests/vps/fatalisa-public-api.yaml
+#
+#      - name: Reconfigure cron image tag
+#        run: sed -i "s|docker.io/account/fatalisa-public-api:cron-latest|index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:cron-${{ github.sha }}|g" ./manifests/vps/fatalisa-public-api.yaml
+#
+#      - name: Reconfigure service
+#        run: sed -i "s|public-ip|${{ secrets.VPS_IP }}|g" ./manifests/vps/fatalisa-public-api.yaml
+#
+#      - name: Deploy to VPS
+#        uses: danielr1996/kubectl-action@1.0.0
+#        with:
+#          slot-name: 'vps-production'
+#          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+#          args: apply -f ./manifests/vps/fatalisa-public-api.yaml
