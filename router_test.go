@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fatalisa-public-api/router"
-	"fatalisa-public-api/service/common/pray-schedule"
 	"fatalisa-public-api/service/qris"
 	"fatalisa-public-api/utils"
 	"github.com/subchen/go-log"
@@ -13,7 +12,6 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
-	"time"
 )
 
 func setupRouter() *router.Config {
@@ -59,29 +57,29 @@ func sendAsPost(uri string, body []byte) []byte {
 	return postResult
 }
 
-func TestGetSchedule(t *testing.T) {
-	pray_schedule.DownloadFile(83)
-	current := time.Now()
-	city := "jakarta"
-	bodyReq := &pray_schedule.PrayScheduleReq{
-		City: city,
-		Date: current.Format("2006/01/02"),
-	}
-
-	if bodyReqJson := utils.Jsonify(bodyReq); len(bodyReqJson) > 0 {
-		dataRes := &pray_schedule.PrayScheduleData{}
-		rawRes := sendAsPost("/api/pray-schedule", []byte(bodyReqJson))
-		if err := json.Unmarshal(rawRes, dataRes); err != nil {
-			t.Error(err)
-		}
-		if current.Format("2006") != dataRes.Year &&
-			current.Format("01") != dataRes.Month &&
-			current.Format("02") != dataRes.Date {
-			t.Errorf("Wrong date, expected %s got %s/%s/%s",
-				current.Format("2006/01/02"), dataRes.Year, dataRes.Month, dataRes.Date)
-		}
-	}
-}
+//func TestGetSchedule(t *testing.T) {
+//	pray_schedule.DownloadFile(83)
+//	current := time.Now()
+//	city := "jakarta"
+//	bodyReq := &pray_schedule.PrayScheduleReq{
+//		City: city,
+//		Date: current.Format("2006/01/02"),
+//	}
+//
+//	if bodyReqJson := utils.Jsonify(bodyReq); len(bodyReqJson) > 0 {
+//		dataRes := &pray_schedule.PrayScheduleData{}
+//		rawRes := sendAsPost("/api/pray-schedule", []byte(bodyReqJson))
+//		if err := json.Unmarshal(rawRes, dataRes); err != nil {
+//			t.Error(err)
+//		}
+//		if current.Format("2006") != dataRes.Year &&
+//			current.Format("01") != dataRes.Month &&
+//			current.Format("02") != dataRes.Date {
+//			t.Errorf("Wrong date, expected %s got %s/%s/%s",
+//				current.Format("2006/01/02"), dataRes.Year, dataRes.Month, dataRes.Date)
+//		}
+//	}
+//}
 
 func TestParseMpmGet(t *testing.T) {
 	testDataMpm := struct {
