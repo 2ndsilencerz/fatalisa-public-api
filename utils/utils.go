@@ -31,8 +31,8 @@ func Jsonify(v interface{}) string {
 func GetPodName() string {
 	str := ""
 	exist := false
-	rand.Seed(time.Now().UnixNano())
 	if str, exist = os.LookupEnv("POD_NAME"); !exist {
+		rand.Seed(time.Now().UnixNano())
 		str = time.Now().Format("2006-01-02") + "-" + strconv.Itoa(rand.Int())
 	}
 	return str

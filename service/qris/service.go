@@ -19,6 +19,7 @@ func ParseMpmService(c *gin.Context) *MpmData {
 	res := MpmData{}
 	res.GetData(req.Raw)
 	log.Info(utils.Jsonify(res))
+	go res.SaveToDB()
 	return &res
 }
 
@@ -32,6 +33,7 @@ func ParseCpmService(c *gin.Context) *CpmData {
 
 	res := CpmData{}
 	res.GetData(req.Raw)
-	log.Info(res)
+	log.Info(utils.Jsonify(res))
+	go res.SaveToDB()
 	return &res
 }

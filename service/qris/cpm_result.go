@@ -1,5 +1,7 @@
 package qris
 
+import "fatalisa-public-api/database/config"
+
 type CpmRequest struct {
 	Raw string `json:"raw" binding:"required"`
 }
@@ -55,4 +57,15 @@ func (data *CpmData) setContents(qrisParsed map[string]string) {
 func (data *CpmData) GetData(raw string) {
 	qrisParsed := GetResultCpm(raw)
 	data.setContents(qrisParsed)
+}
+
+func (data *CpmData) SaveToDB() {
+	mariadb := config.InitMariaDB()
+	mariadb.Write(data)
+
+	postgres := config.InitPostgres()
+	postgres.Write(data)
+
+	mongo := config.InitMongoDB()
+	mongo.InsertOne("CPM", data)
 }
