@@ -1,11 +1,5 @@
 package pray_schedule
 
-import (
-	"fatalisa-public-api/utils"
-	"strings"
-	"testing"
-)
-
 //func TestGetSchedule(t *testing.T) {
 //	DownloadFile(83)
 //	req := &PrayScheduleReq{
@@ -21,10 +15,10 @@ import (
 //	}
 //}
 
-func TestGetCityList(t *testing.T) {
-	DownloadFile(83)
-	jsonRes := utils.Jsonify(GetCityList())
-	if !strings.Contains(jsonRes, "jakarta") {
-		t.Error("Data not found")
-	}
-}
+//func TestGetCityList(t *testing.T) {
+//	DownloadFile(83)
+//	jsonRes := utils.Jsonify(GetCityList())
+//	if !strings.Contains(jsonRes, "jakarta") {
+//		t.Error("Data not found")
+//	}
+//}
