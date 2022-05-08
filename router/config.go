@@ -12,6 +12,11 @@ import (
 
 const accessCounterKey = "accessCounter"
 
+var trustedProxies = []string{
+	gin.PlatformCloudflare,
+	gin.PlatformGoogleAppEngine,
+}
+
 type Config struct {
 	Gin *gin.Engine
 }
@@ -47,6 +52,9 @@ func (router *Config) Get() {
 	router.Gin.Use(ginLogHandler())
 	gin.DefaultWriter = io.MultiWriter(log.Default.Out)
 	gin.ForceConsoleColor()
+
+	// Gin Don't trust all proxies
+	_ = router.Gin.SetTrustedProxies(trustedProxies)
 }
 
 func (router *Config) Run() {
