@@ -10,8 +10,8 @@ import (
 )
 
 var idList = []string{"4F", "50", "57", "5A", "5F", "9F", "63"}
-var id5FList = []string{"5F20", "5F2D", "5F50"}
-var id9FList = []string{"9F08", "9F19", "9F24", "9F25"}
+var id5FList = []string{"5F20", "5F2D", "5F50", "5F55"}
+var id9FList = []string{"9F08", "9F19", "9F24", "9F25", "9F76"}
 var id63List = []string{"9F26", "9F27", "9F10", "9F36", "82", "9F37", "9F74"}
 var keysOfNumberData = []string{
 	"61", "4F", "57", "90F8", "9F19", "9F25",
@@ -42,6 +42,7 @@ func getContentCpm(rawHex string, is4Digit bool) string {
 			log.Error(err)
 		}
 	} else {
+		start = 4
 		if dataLength, err = strconv.ParseInt(rawHex[2:4], 16, 64); err != nil {
 			log.Error(err)
 		}
