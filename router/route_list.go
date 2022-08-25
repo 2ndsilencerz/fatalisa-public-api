@@ -2,7 +2,7 @@ package router
 
 import (
 	commonSvc "fatalisa-public-api/service/common"
-	prayScheduleSvc "fatalisa-public-api/service/common/pray-schedule"
+	prayScheduleSvc "fatalisa-public-api/service/pray-schedule"
 	qrisSvc "fatalisa-public-api/service/qris"
 	"github.com/gin-gonic/gin"
 )
@@ -35,21 +35,21 @@ func (router *Config) initApis() {
 			c.SecureJSON(200, prayScheduleSvc.GetCityList())
 		})
 		api.GET("/pray-schedule/:city", func(c *gin.Context) {
-			c.SecureJSON(200, prayScheduleSvc.GetScheduleService(c))
+			c.SecureJSON(200, prayScheduleSvc.GetSchedule(c))
 		})
 		api.POST("/pray-schedule", func(c *gin.Context) {
-			c.SecureJSON(200, prayScheduleSvc.GetScheduleService(c))
+			c.SecureJSON(200, prayScheduleSvc.GetSchedule(c))
 		})
 		qrisGroup := api.Group("/qris")
 		{
 			qrisGroup.GET("/mpm/:raw", func(c *gin.Context) {
-				c.SecureJSON(200, qrisSvc.ParseMpmService(c))
+				c.SecureJSON(200, qrisSvc.ParseMpm(c))
 			})
 			qrisGroup.POST("/mpm", func(c *gin.Context) {
-				c.SecureJSON(200, qrisSvc.ParseMpmService(c))
+				c.SecureJSON(200, qrisSvc.ParseMpm(c))
 			})
 			qrisGroup.POST("/cpm", func(c *gin.Context) {
-				c.SecureJSON(200, qrisSvc.ParseCpmService(c))
+				c.SecureJSON(200, qrisSvc.ParseCpm(c))
 			})
 		}
 	}

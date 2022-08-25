@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// Jsonify to convert data into json without cumbersome error handling
 func Jsonify(v interface{}) string {
 	var j []byte
 	var err error
@@ -18,16 +19,7 @@ func Jsonify(v interface{}) string {
 	return string(j)
 }
 
-//func GetDuration(duration string) time.Duration {
-//	var res time.Duration
-//	var err error
-//	res, err = time.ParseDuration(duration)
-//	if err != nil {
-//		log.Error(err)
-//	}
-//	return res
-//}
-
+// GetPodName used to get pod name when service run on top of Kubernetes
 func GetPodName() string {
 	str := ""
 	exist := false
@@ -38,6 +30,7 @@ func GetPodName() string {
 	return str
 }
 
+// Mkdir used to make a dir without cumbersome error handling (default mode is 777)
 func Mkdir(location string) {
 	err := os.Mkdir(location, os.FileMode(777))
 	if err != nil {

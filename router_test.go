@@ -4,7 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fatalisa-public-api/router"
-	"fatalisa-public-api/service/qris"
+	"fatalisa-public-api/service/qris/model/cpm"
+	"fatalisa-public-api/service/qris/model/mpm"
 	"fatalisa-public-api/utils"
 	"github.com/subchen/go-log"
 	"io/ioutil"
@@ -84,10 +85,10 @@ func sendAsPost(uri string, body []byte) []byte {
 func TestParseMpmGet(t *testing.T) {
 	testDataMpm := struct {
 		Raw     string
-		MpmData *qris.MpmData
+		MpmData *mpm.Data
 	}{
 		"00020101021126670018ID.CO.EXAMPLE2.WWW01159360056701234560215MIDCONTOH1234560303UMI5204123453033605502015802ID5914NamaMerchantC76009NamaKota16110123456789062070703K1963040BE8",
-		&qris.MpmData{
+		&mpm.Data{
 			GlobalUniqueIdentifier: "ID.CO.EXAMPLE2.WWW",
 			MerchantPAN:            "936005670123456",
 			MerchantID:             "MIDCONTOH123456",
@@ -105,7 +106,7 @@ func TestParseMpmGet(t *testing.T) {
 		},
 	}
 
-	dataRes := &qris.MpmData{}
+	dataRes := &mpm.Data{}
 	rawRes := sendAsGet("/api/qris/mpm/" + testDataMpm.Raw)
 	if err := json.Unmarshal(rawRes, dataRes); err != nil {
 		t.Error(err)
@@ -113,7 +114,7 @@ func TestParseMpmGet(t *testing.T) {
 		if reflect.DeepEqual(&dataRes, &testDataMpm.MpmData) {
 			t.Error()
 		}
-		if qris.CompareCrc(qris.GetResultMpm(testDataMpm.Raw), "0BE8") {
+		if mpm.CompareCrc(mpm.GetResultMpm(testDataMpm.Raw), "0BE8") {
 			t.Error()
 		}
 	}
@@ -122,10 +123,10 @@ func TestParseMpmGet(t *testing.T) {
 func TestParseMpmPost(t *testing.T) {
 	testDataMpm := struct {
 		Raw     string
-		MpmData *qris.MpmData
+		MpmData *mpm.Data
 	}{
 		"00020101021126670018ID.CO.EXAMPLE2.WWW01159360056701234560215MIDCONTOH1234560303UMI5204123453033605502015802ID5914NamaMerchantC76009NamaKota16110123456789062070703K1963040BE8",
-		&qris.MpmData{
+		&mpm.Data{
 			GlobalUniqueIdentifier: "ID.CO.EXAMPLE2.WWW",
 			MerchantPAN:            "936005670123456",
 			MerchantID:             "MIDCONTOH123456",
@@ -143,11 +144,11 @@ func TestParseMpmPost(t *testing.T) {
 		},
 	}
 
-	req := qris.MpmRequest{
+	req := mpm.Request{
 		Raw: testDataMpm.Raw,
 	}
 	if jsonBody := utils.Jsonify(req); len(jsonBody) > 0 {
-		dataRes := &qris.MpmData{}
+		dataRes := &mpm.Data{}
 		rawRes := sendAsPost("/api/qris/mpm", []byte(jsonBody))
 		if err := json.Unmarshal(rawRes, dataRes); err != nil {
 			t.Error(err)
@@ -155,7 +156,7 @@ func TestParseMpmPost(t *testing.T) {
 			if reflect.DeepEqual(&dataRes, &testDataMpm.MpmData) {
 				t.Error("MPM Data not match")
 			}
-			if qris.CompareCrc(qris.GetResultMpm(testDataMpm.Raw), "0BE8") {
+			if mpm.CompareCrc(mpm.GetResultMpm(testDataMpm.Raw), "0BE8") {
 				t.Error("CRC not match")
 			}
 		}
@@ -169,11 +170,11 @@ func TestParseCpmPost(t *testing.T) {
 		raw: "hQVDUFYwMWGTTwegAAAGAiAgUAdxcmlzY3BtWgqTYAUDMSNFZ4mfXyALUmlraSBEZXJpYW5fLQRpZGVuX1AXcmlraS5kZXJpYW5AcXJpc2NwbS5jb22fJQJ4mWM/n3Q8MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkw",
 	}
 
-	req := qris.CpmRequest{
+	req := cpm.Request{
 		Raw: testDataCpm.raw,
 	}
 	if jsonBody := utils.Jsonify(req); len(jsonBody) > 0 {
-		dataRes := &qris.CpmData{}
+		dataRes := &cpm.Data{}
 		rawRes := sendAsPost("/api/qris/cpm", []byte(jsonBody))
 		if err := json.Unmarshal(rawRes, dataRes); err != nil {
 			t.Error(err)

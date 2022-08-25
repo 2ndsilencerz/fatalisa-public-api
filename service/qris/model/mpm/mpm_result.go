@@ -1,15 +1,11 @@
-package qris
+package mpm
 
 import (
 	"fatalisa-public-api/database/config"
 	"fmt"
 )
 
-type MpmRequest struct {
-	Raw string `json:"raw" binding:"required"`
-}
-
-type MpmData struct {
+type Data struct {
 	PayloadFormatIndicator        string `json:"payloadFormatIndicator"`
 	PointOfInitiationMethod       string `json:"pointOfInitiationMethod"`
 	GlobalUniqueIdentifier        string `json:"globalUniqueIdentifier"`
@@ -47,7 +43,7 @@ type MpmData struct {
 	//InactiveDate time.Time `json:"inactiveDate"`
 }
 
-func (data *MpmData) setContents(qrisParsed map[string]string) {
+func (data *Data) setContents(qrisParsed map[string]string) {
 	data.PayloadFormatIndicator = qrisParsed["00"]
 	data.PointOfInitiationMethod = qrisParsed["01"]
 	for i := 2; i <= 45; i++ {
@@ -107,7 +103,7 @@ func (data *MpmData) setContents(qrisParsed map[string]string) {
 	}
 }
 
-func (data *MpmData) getBit62Contents(qrisParsed map[string]string) {
+func (data *Data) getBit62Contents(qrisParsed map[string]string) {
 	var contents [9]string
 	for i := 1; i < 10; i++ {
 		key := "62" + SEPARATOR + fmt.Sprintf("%02d", i)
@@ -124,7 +120,7 @@ func (data *MpmData) getBit62Contents(qrisParsed map[string]string) {
 	data.AdditionalConsumerDataRequest = contents[8]
 }
 
-func (data *MpmData) getBit64Contents(qrisParsed map[string]string) {
+func (data *Data) getBit64Contents(qrisParsed map[string]string) {
 	var contents [3]string
 	for i := 0; i < 3; i++ {
 		key := "64" + SEPARATOR + fmt.Sprintf("%02d", i)
@@ -135,12 +131,12 @@ func (data *MpmData) getBit64Contents(qrisParsed map[string]string) {
 	data.MerchantCityAlt = contents[2]
 }
 
-func (data *MpmData) GetData(raw string) {
+func (data *Data) Parse(raw string) {
 	qrisParsed := GetResultMpm(raw)
 	data.setContents(qrisParsed)
 }
 
-func (data *MpmData) SaveToDB() {
+func (data *Data) SaveToDB() {
 	mariaDB := config.InitMariaDB()
 	mariaDB.Write(data)
 

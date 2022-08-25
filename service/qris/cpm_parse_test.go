@@ -1,6 +1,7 @@
 package qris
 
 import (
+	"fatalisa-public-api/service/qris/model/cpm"
 	"fatalisa-public-api/utils"
 	"github.com/subchen/go-log"
 	"testing"
@@ -8,7 +9,7 @@ import (
 
 type cpmTestData struct {
 	raw string
-	*CpmData
+	*cpm.Data
 }
 
 var testDataCpm *cpmTestData
@@ -20,8 +21,8 @@ func init() {
 }
 
 func TestCpmParse(t *testing.T) {
-	cpmData := &CpmData{}
-	cpmData.GetData(testDataCpm.raw)
+	cpmData := &cpm.Data{}
+	cpmData.Parse(testDataCpm.raw)
 	log.Info(utils.Jsonify(cpmData))
 
 	if cpmData.PayloadFormatIndicator == "" || cpmData.ApplicationPAN == "" || cpmData.IssuerURL == "" {

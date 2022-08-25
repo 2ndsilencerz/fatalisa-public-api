@@ -1,13 +1,20 @@
-package qris
+package cpm
 
 import (
 	"encoding/base64"
 	"encoding/hex"
+	"fatalisa-public-api/service/qris/model/mpm"
 	"github.com/subchen/go-log"
 	"regexp"
 	"strconv"
 	"strings"
 )
+
+var contents map[string]string
+
+func init() {
+	contents = make(map[string]string)
+}
 
 var idList = []string{"4F", "50", "57", "5A", "5F", "9F", "63"}
 var id5FList = []string{"5F20", "5F2D", "5F50", "5F55"}
@@ -18,7 +25,7 @@ var keysOfNumberData = []string{
 	"63", "9F26", "9F27", "9F10", "9F36", "82", "9F37",
 }
 
-func parseCPM(base64Str string) {
+func Parse(base64Str string) {
 	if decodedBytesFromBase64, errDecodeBase64 := base64.StdEncoding.DecodeString(base64Str); errDecodeBase64 != nil {
 		log.Error(errDecodeBase64)
 	} else {
@@ -108,11 +115,11 @@ func getLoopContent(idList []string, raw string, isSub bool) string {
 			} else if id == "82" || !isSub {
 				content := getContentCpm(raw, false)
 				putContentCpm(currentId, content)
-				raw = stripContent(raw, len(content))
+				raw = mpm.StripContent(raw, len(content))
 			} else {
 				content := getContentCpm(raw, true)
 				putContentCpm(currentId, content)
-				raw = stripContent(raw, len(content)+2)
+				raw = mpm.StripContent(raw, len(content)+2)
 			}
 		} else {
 			putContentCpm(currentId, "")
@@ -122,6 +129,6 @@ func getLoopContent(idList []string, raw string, isSub bool) string {
 }
 
 func GetResultCpm(raw string) map[string]string {
-	parseCPM(raw)
+	Parse(raw)
 	return contents
 }

@@ -3,6 +3,7 @@ package pray_schedule
 import (
 	"bytes"
 	"encoding/xml"
+	"fatalisa-public-api/service/pray-schedule/model"
 	"fatalisa-public-api/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/subchen/go-log"
@@ -22,40 +23,12 @@ const ScheduleFilesDir = "schedule/"
 const filenamePrefix = "jadwal-"
 const filenameExtension = ".xml"
 const totalSchedules = 308
-
 const maxSimultaneousDownloadTask = 3
 
 var yearSchedule string
 
-//func ScheduleDownload() {
-//	var err error
-//	s1 := gocron.NewScheduler(time.UTC)
-//	s2 := gocron.NewScheduler(time.UTC)
-//	s3 := gocron.NewScheduler(time.UTC)
-//	s4 := gocron.NewScheduler(time.UTC)
-//	time1, _ := time.Parse("15:04:05", "00:00:00")
-//	time2, _ := time.Parse("15:04:05", "06:00:00")
-//	time3, _ := time.Parse("15:04:05", "12:00:00")
-//	time4, _ := time.Parse("15:04:05", "18:00:00")
-//	if _, err = s1.Every(1).Days().StartAt(time1).Do(PraySchedDownload); err != nil {
-//		log.Error(err)
-//	}
-//	if _, err = s2.Every(1).Days().StartAt(time2).Do(PraySchedDownload); err != nil {
-//		log.Error(err)
-//	}
-//	if _, err = s3.Every(1).Days().StartAt(time3).Do(PraySchedDownload); err != nil {
-//		log.Error(err)
-//	}
-//	if _, err = s4.Every(1).Days().StartAt(time4).Do(PraySchedDownload); err != nil {
-//		log.Error(err)
-//	}
-//	s1.StartAsync()
-//	s2.StartAsync()
-//	s3.StartAsync()
-//	s4.StartAsync()
-//}
-
-func PraySchedDownload() {
+// PrayScheduleDownload used in cronjob for downloading all cities schedule
+func PrayScheduleDownload() {
 	log.Infof("%s %v", "Downloading pray schedule at", time.Now())
 	for i := 1; i <= totalSchedules; i++ {
 		downloadTask++
@@ -68,14 +41,19 @@ func PraySchedDownload() {
 	downloadGroup.Wait()
 }
 
+// DownloadFile used to download the pray schedule based on the city code
+/*
+City code used here are an int starting with 1,
+and it's mapping isn't available since the source are from http://jadwalsholat.pkpu.or.id/
+*/
 func DownloadFile(x int) {
 	var data *Header
 	cityCode := strconv.Itoa(x)
 
 	url := "http://jadwalsholat.pkpu.or.id/export.php"
 	contentType := "application/x-www-form-urlencoded"
-	body := "period=3" + "&" +
-		"y=" + yearSchedule + "&" +
+	body := "period=3" + "&" + // 3 for all year schedule
+		"y=" + yearSchedule + "&" + // year selection
 		"radio=1" + "&" +
 		"fields_terminated=%3B" + "&" +
 		"fields_enclosed=%22" + "&" +
@@ -83,8 +61,8 @@ func DownloadFile(x int) {
 		"edition=1" + "&" +
 		"compress=0" + "&" +
 		"adzanCountry=indonesia" + "&" +
-		"adzanCity=" + cityCode + "&" +
-		"language=indonesian" + "&" +
+		"adzanCity=" + cityCode + "&" + // city selection
+		"language=indonesian" + "&" + // id language selection
 		"algo=1" + "&" +
 		"cbxViewParam=1" + "&" +
 		"cbxViewImsyak=1" + "&" +
@@ -114,6 +92,13 @@ func DownloadFile(x int) {
 	if res, err := client.Post(url, contentType, bytes.NewBuffer([]byte(body))); err != nil {
 		log.Error(err)
 	} else {
+		// Create dir
+		if _, err := os.Stat(ScheduleFilesDir); err != nil {
+			log.Warn(err)
+			log.Info("Creating dir ", ScheduleFilesDir)
+			utils.Mkdir(ScheduleFilesDir)
+		}
+
 		// Create file
 		fileName := ScheduleFilesDir + filenamePrefix + strconv.Itoa(x) + filenameExtension
 		file, errFileCreate := os.Create(fileName)
@@ -167,19 +152,22 @@ func closeResForDownload(response *http.Response) {
 	}
 }
 
+// Header is the header of xml used to parse schedule data downloaded
 type Header struct {
 	Adzan `xml:"adzan"`
 }
 
+// Adzan used as model to fetch schedule data from xml
 type Adzan struct {
 	Version   string `xml:"version"`
 	Site      string `xml:"site"`
 	Country   string `xml:"country"`
 	City      string `xml:"city"`
 	Parameter `xml:"parameter"`
-	Data      []PrayScheduleData `xml:"data" json:"data"`
+	Data      []model.Response `xml:"data" json:"data"`
 }
 
+// Parameter used as misc data from schedule in xml
 type Parameter struct {
 	Longitude string `xml:"longitude"`
 	Latitude  string `xml:"latitude"`
@@ -187,34 +175,8 @@ type Parameter struct {
 	Distance  string `xml:"distance"`
 }
 
-type PrayScheduleData struct {
-	Year    string `xml:"year" json:"year" binding:"required"`
-	Month   string `xml:"month" json:"month" binding:"required"`
-	Date    string `xml:"date" json:"date" binding:"required"`
-	Imsyak  string `xml:"imsyak" json:"imsyak" binding:"required"`
-	Fajr    string `xml:"fajr" json:"fajr" binding:"required"`
-	Syuruq  string `xml:"syuruq" json:"syuruq" binding:"required"`
-	Dzuhur  string `xml:"dzuhr" json:"dzuhur" binding:"required"`
-	Ashr    string `xml:"ashr" json:"ashr" binding:"required"`
-	Maghrib string `xml:"maghrib" json:"maghrib" binding:"required"`
-	Isha    string `xml:"isha" json:"isha" binding:"required"`
-}
-
-type PrayScheduleReq struct {
-	City string `json:"city" binding:"required"`
-	Date string `json:"date" binding:"required"`
-}
-
-type CityListRes struct {
-	List []*city `json:"list"`
-}
-
-type city struct {
-	CityName string `json:"cityName"`
-}
-
-func getSchedule(req *PrayScheduleReq) *PrayScheduleData {
-	responseData := PrayScheduleData{}
+func getSchedule(req *model.Request) *model.Response {
+	responseData := model.Response{}
 	fileName := ScheduleFilesDir + filenamePrefix + req.City + filenameExtension
 	if data := readFile(fileName); data.Version != "" && data.City == req.City {
 		for i := 0; i < len(data.Data); i++ {
@@ -229,8 +191,9 @@ func getSchedule(req *PrayScheduleReq) *PrayScheduleData {
 	return &responseData
 }
 
-func GetScheduleService(c *gin.Context) *PrayScheduleData {
-	req := PrayScheduleReq{}
+// GetSchedule used to get pray schedule of requested city and date if provided
+func GetSchedule(c *gin.Context) *model.Response {
+	req := model.Request{}
 	// replace from BindJSON to ShouldBinJSON, so we should handle the error ourselves
 	if err := c.ShouldBindJSON(&req); err != nil {
 		log.Error(err)
@@ -245,8 +208,9 @@ func GetScheduleService(c *gin.Context) *PrayScheduleData {
 	return res
 }
 
+// GetCityList used to get city list that can be used to get pray schedule
 func GetCityList() interface{} {
-	res := CityListRes{}
+	res := model.CityList{}
 	if files, err := os.ReadDir(ScheduleFilesDir); err != nil {
 		log.Error(err)
 	} else {
@@ -254,8 +218,8 @@ func GetCityList() interface{} {
 			if strings.Contains(file.Name(), filenamePrefix) {
 				cityName := strings.ReplaceAll(file.Name(), filenamePrefix, "")
 				cityName = strings.ReplaceAll(cityName, filenameExtension, "")
-				city := &city{}
-				city.CityName = cityName
+				city := &model.City{}
+				city.Name = cityName
 				res.List = append(res.List, city)
 			}
 		}

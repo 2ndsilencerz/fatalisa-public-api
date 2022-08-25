@@ -1,12 +1,10 @@
-package qris
+package cpm
 
-import "fatalisa-public-api/database/config"
+import (
+	"fatalisa-public-api/database/config"
+)
 
-type CpmRequest struct {
-	Raw string `json:"raw" binding:"required"`
-}
-
-type CpmData struct {
+type Data struct {
 	PayloadFormatIndicator                 string `json:"payloadFormatIndicator"`
 	ApplicationTemplate                    string `json:"applicationTemplate"`
 	ApplicationDefinitionFileName          string `json:"applicationDefinitionFileName"`
@@ -30,7 +28,7 @@ type CpmData struct {
 	IssuerQRISData                         string `json:"issuerQRISData"`
 }
 
-func (data *CpmData) setContents(qrisParsed map[string]string) {
+func (data *Data) setContents(qrisParsed map[string]string) {
 	data.PayloadFormatIndicator = qrisParsed["85"]
 	data.ApplicationTemplate = qrisParsed["61"]
 	data.ApplicationDefinitionFileName = qrisParsed["4F"]
@@ -54,12 +52,12 @@ func (data *CpmData) setContents(qrisParsed map[string]string) {
 	data.IssuerQRISData = qrisParsed["9F74"]
 }
 
-func (data *CpmData) GetData(raw string) {
+func (data *Data) Parse(raw string) {
 	qrisParsed := GetResultCpm(raw)
 	data.setContents(qrisParsed)
 }
 
-func (data *CpmData) SaveToDB() {
+func (data *Data) SaveToDB() {
 	mariadb := config.InitMariaDB()
 	mariadb.Write(data)
 

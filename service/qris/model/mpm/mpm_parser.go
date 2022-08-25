@@ -1,20 +1,21 @@
-package qris
+package mpm
 
 import (
+	"fatalisa-public-api/service/qris/util"
 	"fmt"
 	"github.com/subchen/go-log"
 	"strconv"
 )
-
-// SEPARATOR only used as key in map for subId
-const SEPARATOR = ""
-const MaxIndex = 65
 
 var contents map[string]string
 
 func init() {
 	contents = make(map[string]string)
 }
+
+// SEPARATOR only used as key in map for subId
+const SEPARATOR = ""
+const MaxIndex = 65
 
 func parseAsMap(rawData string) {
 	parseMPM(rawData, "")
@@ -36,7 +37,7 @@ func parseMPM(rawData string, rootId string) {
 			if rootId == "" && isRootIdHaveSubId(currentId) {
 				getSubContentMpm(data, currentId)
 			}
-			rawData = stripContent(rawData, len(data))
+			rawData = StripContent(rawData, len(data))
 		} else {
 			putContentMpm(rootId+expectedId, "")
 		}
@@ -66,7 +67,7 @@ func putContentMpm(key string, data string) {
 	contents[key] = data
 }
 
-func stripContent(rawData string, length int) string {
+func StripContent(rawData string, length int) string {
 	return rawData[4+length:]
 }
 
@@ -99,7 +100,7 @@ func getQrisDataWithoutCrc(mapContent map[string]string) string {
 }
 
 func CompareCrc(mapContent map[string]string, crc string) bool {
-	calculatedSum := CheckSum(getQrisDataWithoutCrc(mapContent))
+	calculatedSum := util.CheckSum(getQrisDataWithoutCrc(mapContent))
 	return calculatedSum == crc
 }
 

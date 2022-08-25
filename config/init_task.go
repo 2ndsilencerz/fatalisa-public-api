@@ -2,7 +2,7 @@ package config
 
 import (
 	"fatalisa-public-api/service/common"
-	prayschedule "fatalisa-public-api/service/common/pray-schedule"
+	prayschedule "fatalisa-public-api/service/pray-schedule"
 	"fatalisa-public-api/utils"
 	"github.com/subchen/go-log"
 	"github.com/subchen/go-log/writers"
@@ -25,6 +25,7 @@ func init() {
 	log.Default.Formatter = new(utils.LogFormat)
 }
 
+// set timezone by looking the environment variable
 func init() {
 	_, _ = os.LookupEnv("TZ")
 }
@@ -38,14 +39,17 @@ func init() {
 	}
 }
 
-// check directory if exist
+// check directory for service if existed
+// when it's not, create one
 func init() {
 	if _, err := os.Stat(utils.FileLogLocation); err != nil {
-		log.Error(err)
+		log.Warn(err)
+		log.Info("Creating dir ", utils.FileLogLocation)
 		utils.Mkdir(utils.FileLogLocation)
 	}
 	if _, err := os.Stat(prayschedule.ScheduleFilesDir); err != nil {
-		log.Error(err)
+		log.Warn(err)
+		log.Info("Creating dir ", prayschedule.ScheduleFilesDir)
 		utils.Mkdir(prayschedule.ScheduleFilesDir)
 	}
 }

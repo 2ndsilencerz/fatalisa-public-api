@@ -1,10 +1,11 @@
-package qris
+package util
 
 import (
 	"fmt"
 	"strings"
 )
 
+// CheckSum used to calculate Sum of the CRC in MPM
 func CheckSum(str string) string {
 	output := ""
 	crc := 0xFFFF
