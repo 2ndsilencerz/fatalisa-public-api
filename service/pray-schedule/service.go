@@ -95,39 +95,38 @@ func DownloadFile(x int) {
 		// Create dir
 		if _, err := os.Stat(ScheduleFilesDir); err != nil {
 			log.Warn(err)
-			log.Info("Creating dir ", ScheduleFilesDir)
+			workDir := utils.GetWorkingDir()
+			log.Info("Creating dir in ", workDir, ScheduleFilesDir)
 			utils.Mkdir(ScheduleFilesDir)
 		}
 
 		// Create file
 		fileName := ScheduleFilesDir + filenamePrefix + strconv.Itoa(x) + filenameExtension
-		file, errFileCreate := os.Create(fileName)
-		if errFileCreate != nil {
-			log.Error(errFileCreate)
-		} else {
+		file := utils.CreateFile(fileName)
+		if file != nil {
 			body := res.Body
 			if _, errWriteFile := io.Copy(file, body); errWriteFile != nil {
-				log.Error(errWriteFile)
+				log.Error("Write to file error: ", errWriteFile)
 			}
-			if errOwnFile := file.Chown(0, 0); errOwnFile != nil {
-				log.Error(errOwnFile)
-			}
-			if errModFile := file.Chmod(0777); errModFile != nil {
-				log.Error(errModFile)
-			}
+			//if errOwnFile := file.Chown(1001, 1001); errOwnFile != nil {
+			//	log.Error("Change owner of file error: ", errOwnFile)
+			//}
+			//if errModFile := file.Chmod(644); errModFile != nil {
+			//	log.Error("Change access mode of file error: ", errModFile)
+			//}
 			if errCloseFile := file.Close(); errCloseFile != nil {
 				log.Error(errCloseFile)
 			}
 
-			// Rename the file
+			// Rename the file postfix from city code to actual city name
 			data = readFile(fileName)
 			newFileName := ScheduleFilesDir + filenamePrefix + data.City + filenameExtension
 			if errRenameFile := os.Rename(fileName, newFileName); errRenameFile != nil {
-				log.Error(errRenameFile)
+				log.Error("Rename file error: ", errRenameFile)
 			}
 			log.Info("Pray schedule ", data.City, " downloaded")
 		}
-		closeResForDownload(res)
+		closeResponseForDownload(res)
 	}
 
 	if downloadTask > 0 {
@@ -146,7 +145,7 @@ func readFile(fileName string) *Header {
 	return &res
 }
 
-func closeResForDownload(response *http.Response) {
+func closeResponseForDownload(response *http.Response) {
 	if err := response.Body.Close(); err != nil {
 		log.Error(err)
 	}
@@ -167,7 +166,7 @@ type Adzan struct {
 	Data      []model.Response `xml:"data" json:"data"`
 }
 
-// Parameter used as misc data from schedule in xml
+// Parameter used to get misc data from schedule in xml
 type Parameter struct {
 	Longitude string `xml:"longitude"`
 	Latitude  string `xml:"latitude"`
