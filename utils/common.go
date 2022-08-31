@@ -32,7 +32,8 @@ func GetPodName() string {
 
 // Mkdir used to make a dir without cumbersome error handling (default mode is 777)
 func Mkdir(location string) {
-	err := os.Mkdir(location, os.ModeDir)
+	log.Info("Creating dir ", location)
+	err := os.Mkdir(location, os.ModePerm)
 	if err != nil {
 		log.Error(err)
 	}
@@ -40,6 +41,7 @@ func Mkdir(location string) {
 
 // CreateFile used to create file without cumbersome error handling
 func CreateFile(location string) *os.File {
+	log.Info("Creating file ", location)
 	file, errFileCreate := os.Create(location)
 	if errFileCreate != nil {
 		log.Error("Create file error: ", errFileCreate)
@@ -53,5 +55,5 @@ func GetWorkingDir() string {
 	if err != nil {
 		log.Error(err)
 	}
-	return workDir
+	return workDir + "/"
 }

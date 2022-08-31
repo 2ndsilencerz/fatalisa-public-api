@@ -96,12 +96,12 @@ func DownloadFile(x int) {
 		if _, err := os.Stat(ScheduleFilesDir); err != nil {
 			log.Warn(err)
 			workDir := utils.GetWorkingDir()
-			log.Info("Creating dir in ", workDir, ScheduleFilesDir)
-			utils.Mkdir(ScheduleFilesDir)
+			createDir := workDir + ScheduleFilesDir
+			utils.Mkdir(createDir)
 		}
 
 		// Create file
-		fileName := ScheduleFilesDir + filenamePrefix + strconv.Itoa(x) + filenameExtension
+		fileName := utils.GetWorkingDir() + ScheduleFilesDir + filenamePrefix + strconv.Itoa(x) + filenameExtension
 		file := utils.CreateFile(fileName)
 		if file != nil {
 			body := res.Body
@@ -111,7 +111,7 @@ func DownloadFile(x int) {
 			//if errOwnFile := file.Chown(1001, 1001); errOwnFile != nil {
 			//	log.Error("Change owner of file error: ", errOwnFile)
 			//}
-			//if errModFile := file.Chmod(644); errModFile != nil {
+			//if errModFile := file.Chmod(664); errModFile != nil {
 			//	log.Error("Change access mode of file error: ", errModFile)
 			//}
 			if errCloseFile := file.Close(); errCloseFile != nil {
@@ -121,6 +121,7 @@ func DownloadFile(x int) {
 			// Rename the file postfix from city code to actual city name
 			data = readFile(fileName)
 			newFileName := ScheduleFilesDir + filenamePrefix + data.City + filenameExtension
+			log.Info("Renaming file from ", fileName, " to ", filenamePrefix+data.City+filenameExtension)
 			if errRenameFile := os.Rename(fileName, newFileName); errRenameFile != nil {
 				log.Error("Rename file error: ", errRenameFile)
 			}
@@ -174,7 +175,7 @@ type Parameter struct {
 	Distance  string `xml:"distance"`
 }
 
-func getSchedule(req *model.Request) *model.Response {
+func getData(req *model.Request) *model.Response {
 	responseData := model.Response{}
 	fileName := ScheduleFilesDir + filenamePrefix + req.City + filenameExtension
 	if data := readFile(fileName); data.Version != "" && data.City == req.City {
@@ -202,7 +203,7 @@ func GetSchedule(c *gin.Context) *model.Response {
 	}
 	log.Info(utils.Jsonify(req))
 
-	res := getSchedule(&req)
+	res := getData(&req)
 	log.Info(utils.Jsonify(res))
 	return res
 }

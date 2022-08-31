@@ -25,7 +25,7 @@ func datetimeApi() *Body {
 func VersionChecker() *Body {
 	res := Body{}
 	if version, err := ioutil.ReadFile("/build-date.txt"); err != nil {
-		log.Error(err)
+		log.Warn("No build date set!")
 	} else {
 		res.Message = string(version)
 	}
