@@ -71,22 +71,22 @@ jobs:
   #          tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:latest
   #          file: ./Dockerfile
 
-  deploy-to-azure:
-    runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: 'production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
-    steps:
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'fatalisa-public-api'
-          slot-name: 'production'
-          publish-profile: ${{ secrets.AzureAppService_PublishProfile_133862a254084313924675e43d99351a }}
-          images: 'index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:${{ github.sha }}'
+#  deploy-to-azure:
+#    runs-on: ubuntu-latest
+#    needs: build
+#    environment:
+#      name: 'production'
+#      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+#
+#    steps:
+#      - name: Deploy to Azure Web App
+#        id: deploy-to-webapp
+#        uses: azure/webapps-deploy@v2
+#        with:
+#          app-name: 'fatalisa-public-api'
+#          slot-name: 'production'
+#          publish-profile: ${{ secrets.AzureAppService_PublishProfile_133862a254084313924675e43d99351a }}
+#          images: 'index.docker.io/${{ secrets.AzureAppService_ContainerUsername_65f97fe15e7d44598876f4edad08458a }}/fatalisa-public-api:${{ github.sha }}'
 
 #  deploy-to-vps:
 #    runs-on: ubuntu-latest
