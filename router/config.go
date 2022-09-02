@@ -2,6 +2,7 @@ package router
 
 import (
 	"fatalisa-public-api/database/config"
+	"fatalisa-public-api/service/web"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/subchen/go-log"
@@ -55,6 +56,9 @@ func (router *Config) Get() {
 
 	// Gin Don't trust all proxies
 	_ = router.Gin.SetTrustedProxies(trustedProxies)
+
+	// add webpages
+	router.Gin.HTMLRender = web.LoadTemplates()
 }
 
 func (router *Config) Run() {
