@@ -10,7 +10,9 @@ import (
 	"time"
 )
 
-const FileLogLocation = "data/logs/"
+const (
+	FileLogLocation = "logs/"
+)
 
 var (
 	FileLogName = FileLogLocation + "gin-" + GetPodName() + ".log"

@@ -1,12 +1,14 @@
 package web
 
 import (
+	bingwallpaper "fatalisa-public-api/service/web/utils/bing-wallpaper"
 	"fmt"
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
 	"github.com/subchen/go-log"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -19,22 +21,33 @@ func Service(c *gin.Context, reqType string) {
 	c.HTML(http.StatusOK, reqType, Index())
 }
 
+type BodyExample struct {
+	Text1 string
+	Text2 string
+}
+
+type FooterTexts struct {
+	BgImgCopyright string
+	BgImgUrl       string
+	Text           string
+	Year           string
+}
+
 func Index() *gin.H {
+	bgImage := BackgroundImage()
 	return &gin.H{
-		"Title": pageTitle,
-		"Body": struct {
-			Text1 string
-			Text2 string
-		}{
+		"Title":    pageTitle,
+		"Function": Example(),
+		"BgImg":    bgImage.Url,
+		"Body": BodyExample{
 			Text1: "Welcome",
 			Text2: "This is index page",
 		},
-		"Footer": struct {
-			Text string
-			Year string
-		}{
-			Text: pageTitle,
-			Year: fmt.Sprint(time.Now().Year()),
+		"Footer": FooterTexts{
+			BgImgCopyright: bgImage.Copyright,
+			BgImgUrl:       bgImage.CopyrightLink,
+			Text:           pageTitle,
+			Year:           fmt.Sprint(time.Now().Year()),
 		},
 	}
 }
@@ -46,14 +59,31 @@ func LoadTemplates() multitemplate.Renderer {
 
 	layouts, err := filepath.Glob(webBasePageDir + "/*")
 	if err != nil {
-		log.Error(err)
+		log.Error("Error : ", err)
 		return nil
 	}
 
-	var index []string
-	index = append(index, webpagesDir+"/index.gohtml")
-	index = append(index, layouts...)
-	r.AddFromFiles("index", index...)
+	var base []string
+	base = append(base, webpagesDir+"/base/fullpage.gohtml")
+	base = append(base, layouts...)
+
+	pages, err := filepath.Glob(webpagesDir + "/*.gohtml")
+	if err != nil {
+		log.Error("Error: ", err)
+	}
+	for _, page := range pages {
+		compiledPage := append(base, page)
+		pageName := strings.Replace(filepath.Base(page), ".gohtml", "", -1)
+		r.AddFromFiles(pageName, compiledPage...)
+	}
 
 	return r
+}
+
+func Example() string {
+	return "Example"
+}
+
+func BackgroundImage() bingwallpaper.ImageData {
+	return bingwallpaper.GetTodayWallpaper()
 }

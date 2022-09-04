@@ -1,10 +1,17 @@
-{{template "header" .}}
-<body>
-    <h1 style="align-content: center; text-align: center">
-        {{.Body.Text1}}
-    </h1>
-    <h2 style="align-content: center; text-align: center">
-        {{.Body.Text2}}
-    </h2>
-</body>
-{{template "footer" .}}
+{{define "content"}}
+<div class="card-body text-center">
+    <div class="row">
+        <div class="col; h1">
+            {{.Body.Text1}}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col; h2">
+            {{.Body.Text2}}
+        </div>
+        <div class="col; h3">
+            {{.Function}}
+        </div>
+    </div>
+</div>
+{{end}}

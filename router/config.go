@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"fatalisa-public-api/database/config"
 	"fatalisa-public-api/service/web"
 	"fmt"
@@ -84,12 +85,14 @@ func (router *Config) InitRoutes() {
 
 func increaseAccessCounter() {
 	redis := config.InitRedis()
-	val := redis.Get(accessCounterKey)
-	currentValue, err := strconv.Atoi(val)
-	if err != nil {
-		log.Error(err)
-		currentValue = 0
+	if len(redis.Client.Ping(context.Background()).Err().Error()) == 0 {
+		val := redis.Get(accessCounterKey)
+		currentValue, err := strconv.Atoi(val)
+		if err != nil {
+			log.Error(err)
+			currentValue = 0
+		}
+		currentValue++
+		redis.Set(accessCounterKey, strconv.Itoa(currentValue))
 	}
-	currentValue++
-	redis.Set(accessCounterKey, strconv.Itoa(currentValue))
 }
