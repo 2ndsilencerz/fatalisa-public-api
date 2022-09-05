@@ -32,9 +32,7 @@ func init() {
 
 // print BUILD_DATE if exist
 func init() {
-	if buildDate, exist := os.LookupEnv("BUILD_DATE"); exist && len(buildDate) > 0 {
-		log.Info("This image built in ", buildDate)
-	} else if txt := common.VersionChecker().Message; len(txt) > 0 {
+	if txt := common.VersionChecker().Message; len(txt) > 0 {
 		log.Info("This image built in ", txt)
 	}
 }

@@ -1,25 +1,21 @@
 package web
 
 import (
+	"fatalisa-public-api/service/common"
 	bingwallpaper "fatalisa-public-api/service/web/utils/bing-wallpaper"
 	"fmt"
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
 	"github.com/subchen/go-log"
-	"net/http"
 	"path/filepath"
 	"strings"
 	"time"
 )
 
-var pageTitle = "Fatalisa Public API"
-
-const webpagesDir = "service/web/pages"
-const webBasePageDir = webpagesDir + "/base"
-
-func Service(c *gin.Context, reqType string) {
-	c.HTML(http.StatusOK, reqType, Index())
-}
+const (
+	webpagesDir    = "service/web/pages"
+	webBasePageDir = webpagesDir + "/base"
+)
 
 type BodyExample struct {
 	Text1 string
@@ -31,25 +27,7 @@ type FooterTexts struct {
 	BgImgUrl       string
 	Text           string
 	Year           string
-}
-
-func Index() *gin.H {
-	bgImage := BackgroundImage()
-	return &gin.H{
-		"Title":    pageTitle,
-		"Function": Example(),
-		"BgImg":    bgImage.Url,
-		"Body": BodyExample{
-			Text1: "Welcome",
-			Text2: "This is index page",
-		},
-		"Footer": FooterTexts{
-			BgImgCopyright: bgImage.Copyright,
-			BgImgUrl:       bgImage.CopyrightLink,
-			Text:           pageTitle,
-			Year:           fmt.Sprint(time.Now().Year()),
-		},
-	}
+	Version        string
 }
 
 // LoadTemplates function referenced to gin multi-template documentation
@@ -80,10 +58,23 @@ func LoadTemplates() multitemplate.Renderer {
 	return r
 }
 
-func Example() string {
-	return "Example"
-}
-
 func BackgroundImage() bingwallpaper.ImageData {
 	return bingwallpaper.GetTodayWallpaper()
+}
+
+// Template provide template data for pages (footer and head already set)
+func Template(data interface{}) *gin.H {
+	bgImage := BackgroundImage()
+	return &gin.H{
+		"Title": pageTitle,
+		"BgImg": bgImage.Url,
+		"Footer": FooterTexts{
+			BgImgCopyright: bgImage.Copyright,
+			BgImgUrl:       bgImage.CopyrightLink,
+			Text:           pageTitle,
+			Year:           fmt.Sprint(time.Now().Year()),
+			Version:        common.VersionChecker().Message,
+		},
+		"Body": data,
+	}
 }

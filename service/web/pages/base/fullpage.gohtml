@@ -8,7 +8,8 @@
         <link rel="shortcut icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/534/534621.png">
     </head>
     <body class="container-fluid text-center" style="background-image: url('{{.BgImg}}')">
-    {{template "body" .}}
-    {{template "footer" .}}
+        {{template "body" .}}
+        {{template "footer" .}}
+        <div class="position-absolute bottom-0 end-0" style="font-size: 10px">{{.Footer.Version}}</div>
     </body>
 </html>

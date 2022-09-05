@@ -81,6 +81,8 @@ func (router *Config) InitRoutes() {
 	router.initHealthRoute()
 	router.versionChecker()
 	router.initApis()
+	router.initWebRoute()
+	router.initServeFiles()
 }
 
 func increaseAccessCounter() {

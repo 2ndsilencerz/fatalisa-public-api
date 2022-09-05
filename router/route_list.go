@@ -11,7 +11,7 @@ import (
 
 func (router *Config) initLandingRoute() {
 	router.Gin.GET("/", func(c *gin.Context) {
-		web.Service(c, "index")
+		c.HTML(http.StatusOK, "index", web.Index())
 	})
 }
 
@@ -55,4 +55,18 @@ func (router *Config) initApis() {
 			})
 		}
 	}
+}
+
+func (router *Config) initWebRoute() {
+	api := router.Gin.Group("/web")
+	{
+		api.GET("/pray-schedule", func(c *gin.Context) {
+			c.HTML(http.StatusOK, "pray-schedule", web.PraySchedule())
+		})
+	}
+}
+
+func (router *Config) initServeFiles() {
+	router.Gin.Static("/css", "./service/web/pages/css")
+	router.Gin.Static("/img", "./service/web/pages/img")
 }

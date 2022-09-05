@@ -1,8 +1,7 @@
 package common
 
 import (
-	"github.com/subchen/go-log"
-	"io/ioutil"
+	"os"
 	"time"
 )
 
@@ -17,10 +16,14 @@ func DateTimeApi() *Body {
 
 func VersionChecker() *Body {
 	res := Body{}
-	if version, err := ioutil.ReadFile("/build-date.txt"); err != nil {
-		log.Warn("No build date set!")
-	} else {
-		res.Message = string(version)
+	if buildDate, exist := os.LookupEnv("BUILD_DATE"); exist && len(buildDate) > 0 {
+		res.Message = buildDate
+		return &res
+	}
+
+	if buildDate, err := os.ReadFile("/build-date.txt"); err == nil {
+		res.Message = string(buildDate)
+		return &res
 	}
 	return &res
 }
