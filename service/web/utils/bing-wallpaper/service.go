@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/subchen/go-log"
 	"io"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -42,7 +41,7 @@ func GetTodayWallpaper() ImageData {
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
 	}(apiResponse.Body)
-	rawJson, err := ioutil.ReadAll(apiResponse.Body)
+	rawJson, err := io.ReadAll(apiResponse.Body)
 
 	data := &jsonAPI{}
 	err = json.Unmarshal(rawJson, data)
