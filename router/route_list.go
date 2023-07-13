@@ -5,68 +5,68 @@ import (
 	praySchedule "fatalisa-public-api/service/pray-schedule"
 	"fatalisa-public-api/service/qris"
 	"fatalisa-public-api/service/web"
-	"github.com/gin-gonic/gin"
-	"net/http"
+	"github.com/gofiber/fiber/v2"
 )
 
 func (router *Config) initLandingRoute() {
-	router.Gin.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index", web.Index())
+	router.Fiber.Get("/", func(c *fiber.Ctx) error {
+		return c.Render("index", web.Index())
 	})
 }
 
 func (router *Config) initHealthRoute() {
-	router.Gin.GET("/health", func(c *gin.Context) {
-		c.SecureJSON(http.StatusOK, &common.Body{Message: "pong"})
+	router.Fiber.Get("/health", func(c *fiber.Ctx) error {
+		return c.JSON(&common.Body{Message: "pong"})
 	})
 }
 
 func (router *Config) versionChecker() {
-	router.Gin.GET("/version", func(c *gin.Context) {
-		c.SecureJSON(http.StatusOK, common.VersionChecker())
+	router.Fiber.Get("/version", func(c *fiber.Ctx) error {
+		return c.JSON(common.VersionChecker())
 	})
 }
 
 func (router *Config) initApis() {
-	api := router.Gin.Group("/api")
+	api := router.Fiber.Group("/api")
 	{
-		api.GET("/datetime", func(c *gin.Context) {
-			c.SecureJSON(http.StatusOK, common.DateTimeApi())
+		api.Get("/datetime", func(c *fiber.Ctx) error {
+			return c.JSON(common.DateTimeApi())
 		})
-		api.GET("/pray-schedule/city-list", func(c *gin.Context) {
-			c.SecureJSON(http.StatusOK, praySchedule.GetCityList())
+		api.Get("/pray-schedule/city-list", func(c *fiber.Ctx) error {
+			return c.JSON(praySchedule.GetCityList())
 		})
-		api.GET("/pray-schedule/:city", func(c *gin.Context) {
-			c.SecureJSON(http.StatusOK, praySchedule.GetSchedule(c))
+		api.Get("/pray-schedule/:city", func(c *fiber.Ctx) error {
+			return c.JSON(praySchedule.GetSchedule(c))
 		})
-		api.POST("/pray-schedule", func(c *gin.Context) {
-			c.SecureJSON(http.StatusOK, praySchedule.GetSchedule(c))
+		api.Post("/pray-schedule", func(c *fiber.Ctx) error {
+			return c.JSON(praySchedule.GetSchedule(c))
 		})
 		qrisGroup := api.Group("/qris")
 		{
-			qrisGroup.GET("/mpm/:raw", func(c *gin.Context) {
-				c.SecureJSON(http.StatusOK, qris.ParseMpm(c))
+			qrisGroup.Get("/mpm/:raw", func(c *fiber.Ctx) error {
+				return c.JSON(qris.ParseMpm(c))
 			})
-			qrisGroup.POST("/mpm", func(c *gin.Context) {
-				c.SecureJSON(http.StatusOK, qris.ParseMpm(c))
+			qrisGroup.Post("/mpm", func(c *fiber.Ctx) error {
+				return c.JSON(qris.ParseMpm(c))
 			})
-			qrisGroup.POST("/cpm", func(c *gin.Context) {
-				c.SecureJSON(http.StatusOK, qris.ParseCpm(c))
+			qrisGroup.Post("/cpm", func(c *fiber.Ctx) error {
+				return c.JSON(qris.ParseCpm(c))
 			})
 		}
 	}
 }
 
 func (router *Config) initWebRoute() {
-	api := router.Gin.Group("/web")
+	api := router.Fiber.Group("/web")
 	{
-		api.GET("/pray-schedule", func(c *gin.Context) {
-			c.HTML(http.StatusOK, "pray-schedule", web.PraySchedule())
+		api.Get("/pray-schedule", func(c *fiber.Ctx) error {
+			return c.JSON("none")
 		})
 	}
 }
 
 func (router *Config) initServeFiles() {
-	router.Gin.Static("/css", "./service/web/pages/css")
-	router.Gin.Static("/img", "./service/web/pages/img")
+	router.Fiber.Static("/", "./service/web/pages")
+	router.Fiber.Static("/css", "./service/web/pages/css")
+	router.Fiber.Static("/img", "./service/web/pages/img")
 }

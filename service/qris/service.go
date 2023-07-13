@@ -1,20 +1,22 @@
 package qris
 
 import (
+	qrisModel "fatalisa-public-api/service/qris/model"
 	"fatalisa-public-api/service/qris/model/cpm"
 	"fatalisa-public-api/service/qris/model/mpm"
 	"fatalisa-public-api/utils"
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/subchen/go-log"
 )
 
 // ParseMpm used to parse MPM data
-func ParseMpm(c *gin.Context) *mpm.Data {
-	req := mpm.Request{}
-	if len(c.Param("raw")) > 0 {
-		req.Raw = c.Param("raw")
-	} else if err := c.BindJSON(&req); err != nil {
+func ParseMpm(c *fiber.Ctx) *mpm.Data {
+	req := qrisModel.Request{}
+	if len(c.Params("raw")) > 0 {
+		req.Raw = c.Params("raw")
+	} else if err := c.BodyParser(&req); err != nil {
 		log.Error(err)
+		return nil
 	} else {
 		log.Info(utils.Jsonify(req))
 	}
@@ -27,10 +29,11 @@ func ParseMpm(c *gin.Context) *mpm.Data {
 }
 
 // ParseCpm used to parse CPM data
-func ParseCpm(c *gin.Context) *cpm.Data {
-	req := cpm.Request{}
-	if err := c.BindJSON(&req); err != nil {
+func ParseCpm(c *fiber.Ctx) *cpm.Data {
+	req := qrisModel.Request{}
+	if err := c.BodyParser(&req); err != nil {
 		log.Error(err)
+		return nil
 	} else {
 		log.Info(req)
 	}

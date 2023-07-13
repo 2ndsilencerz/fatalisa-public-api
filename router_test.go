@@ -10,9 +10,8 @@ import (
 	"fatalisa-public-api/service/qris/model/mpm"
 	"fmt"
 	"github.com/subchen/go-log"
-	"io/ioutil"
+	"io"
 	"net/http"
-	"net/http/httptest"
 	"reflect"
 	"strconv"
 	"testing"
@@ -48,13 +47,18 @@ func sendData(method string, uri string, data interface{}) []byte {
 	}
 	var postResult []byte
 	routerTest := setupRouter()
-	httpRes := httptest.NewRecorder()
+	//httpRes := httptest.NewRecorder()
 	httpReq, err := http.NewRequest(method, uri, bytes.NewBuffer(body))
+	httpReq.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		log.Error(err)
 	} else {
-		routerTest.Gin.ServeHTTP(httpRes, httpReq)
-		if rawRes, err := ioutil.ReadAll(httpRes.Body); err != nil {
+		log.Info("Request is " + fmt.Sprint(httpReq))
+		httpRes, err := routerTest.Fiber.Test(httpReq, -1)
+		if err != nil {
+			log.Error(err)
+		}
+		if rawRes, err := io.ReadAll(httpRes.Body); err != nil {
 			log.Error(err)
 		} else {
 			postResult = rawRes

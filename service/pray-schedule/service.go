@@ -5,7 +5,7 @@ import (
 	"encoding/xml"
 	"fatalisa-public-api/service/pray-schedule/model"
 	"fatalisa-public-api/utils"
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/subchen/go-log"
 	"io"
 	"net/http"
@@ -192,13 +192,12 @@ func getData(req *model.Request) *model.Response {
 }
 
 // GetSchedule used to get pray schedule of requested city and date if provided
-func GetSchedule(c *gin.Context) *model.Response {
+func GetSchedule(c *fiber.Ctx) *model.Response {
 	req := model.Request{}
-	// replace from BindJSON to ShouldBinJSON, so we should handle the error ourselves
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.BodyParser(&req); err != nil {
 		log.Error(err)
-		log.Warn("Request method is GET")
-		req.City = c.Param("city")
+		log.Info("Request method is " + c.Method())
+		req.City = c.Params("city")
 		req.Date = time.Now().Format("2006/01/02")
 	}
 	log.Info(utils.Jsonify(req))

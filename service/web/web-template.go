@@ -1,20 +1,8 @@
 package web
 
-import (
-	"fatalisa-public-api/service/common"
-	bingwallpaper "fatalisa-public-api/service/web/utils/bing-wallpaper"
-	"fmt"
-	"github.com/gin-contrib/multitemplate"
-	"github.com/gin-gonic/gin"
-	"github.com/subchen/go-log"
-	"path/filepath"
-	"strings"
-	"time"
-)
-
 const (
-	webpagesDir    = "service/web/pages"
-	webBasePageDir = webpagesDir + "/base"
+// webpagesDir = "service/web/pages"
+// webBasePageDir = webpagesDir + "/base"
 )
 
 type BodyExample struct {
@@ -30,51 +18,6 @@ type FooterTexts struct {
 	Version        string
 }
 
-// LoadTemplates function referenced to gin multi-template documentation
-// https://github.com/gin-contrib/multitemplate
-func LoadTemplates() multitemplate.Renderer {
-	r := multitemplate.NewRenderer()
-
-	layouts, err := filepath.Glob(webBasePageDir + "/*")
-	if err != nil {
-		log.Error("Error : ", err)
-		return nil
-	}
-
-	var base []string
-	base = append(base, webpagesDir+"/base/fullpage.gohtml")
-	base = append(base, layouts...)
-
-	pages, err := filepath.Glob(webpagesDir + "/*.gohtml")
-	if err != nil {
-		log.Error("Error: ", err)
-	}
-	for _, page := range pages {
-		compiledPage := append(base, page)
-		pageName := strings.Replace(filepath.Base(page), ".gohtml", "", -1)
-		r.AddFromFiles(pageName, compiledPage...)
-	}
-
-	return r
-}
-
-func BackgroundImage() bingwallpaper.ImageData {
-	return bingwallpaper.GetTodayWallpaper()
-}
-
-// Template provide template data for pages (footer and head already set)
-func Template(data interface{}) *gin.H {
-	bgImage := BackgroundImage()
-	return &gin.H{
-		"Title": pageTitle,
-		"BgImg": bgImage.Url,
-		"Footer": FooterTexts{
-			BgImgCopyright: bgImage.Copyright,
-			BgImgUrl:       bgImage.CopyrightLink,
-			Text:           pageTitle,
-			Year:           fmt.Sprint(time.Now().Year()),
-			Version:        common.VersionChecker().Message,
-		},
-		"Body": data,
-	}
-}
+//func BackgroundImage() bingwallpaper.ImageData {
+//	return bingwallpaper.GetTodayWallpaper()
+//}

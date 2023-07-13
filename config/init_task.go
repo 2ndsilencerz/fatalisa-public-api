@@ -5,8 +5,6 @@ import (
 	prayschedule "fatalisa-public-api/service/pray-schedule"
 	"fatalisa-public-api/utils"
 	"github.com/subchen/go-log"
-	"github.com/subchen/go-log/writers"
-	"io"
 	"os"
 )
 
@@ -15,13 +13,13 @@ func Init() {
 
 // set logger format
 func init() {
-	log.Default.Out = io.MultiWriter(
-		os.Stdout,
-		&writers.DailyFileWriter{
-			Name:     utils.FileLogName,
-			MaxCount: 10,
-		},
-	)
+	//log.Default.Out = io.MultiWriter(
+	//	os.Stdout,
+	//	&writers.DailyFileWriter{
+	//		Name:     utils.FileLogName,
+	//		MaxCount: 10,
+	//	},
+	//)
 	log.Default.Formatter = new(utils.LogFormat)
 }
 
