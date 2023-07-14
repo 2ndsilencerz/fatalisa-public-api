@@ -1,18 +1,19 @@
 package web
 
 import (
-	"github.com/subchen/go-log"
-	"html/template"
+	"github.com/gofiber/fiber/v2"
 )
 
-//var pageTitle = "Fatalisa Public API"
+var pageTitle = "Fatalisa Public API"
 
-func Index() *template.Template {
-	//body := BodyExample{
-	//	Text1: "Welcome",
-	//	Text2: "This is index page",
-	//}
-	tmpl, _ := template.New("index").ParseFiles("service/web/template/index.html")
-	log.Debug("tmpl: ", tmpl)
-	return tmpl
+func Index() *fiber.Map {
+	body, footer := WebTemplate()
+	contentMap := fiber.Map{
+		"Title":  pageTitle,
+		"Footer": footer,
+		"BgImg":  footer.BgImgUrl,
+		"Body":   body,
+	}
+
+	return &contentMap
 }

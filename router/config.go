@@ -1,11 +1,12 @@
 package router
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
+	fiberLogger "github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	htmlEngine "github.com/gofiber/template/html/v2"
 	"github.com/subchen/go-log"
-	"html/template"
 	"os"
 )
 
@@ -16,19 +17,22 @@ type Config struct {
 }
 
 func (router *Config) Get() {
-	engine := htmlEngine.New("./service/web/pages", ".html")
-	engine.AddFunc(
-		// add unescape function
-		"unescape", func(s string) template.HTML {
-			return template.HTML(s)
-		},
-	)
+	engine := htmlEngine.New("service/web/pages", ".html")
 	router.Fiber = fiber.New(
 		fiber.Config{
 			Views: engine,
 		},
 	)
 	router.Fiber.Use(recover.New())
+	router.Fiber.Use(fiberLogger.New(fiberLogger.Config{
+		Format: "${time} [GoFiber] :" +
+			fmt.Sprintf("%4s", "${status}") +
+			"-" +
+			fmt.Sprintf("%11s", "${latency}") +
+			fmt.Sprintf("%7s", "${method}") +
+			"${path}\n",
+		TimeFormat: "2006/01/02 15:04:05 -0700",
+	}))
 }
 
 func (router *Config) Run() {
@@ -46,7 +50,7 @@ func (router *Config) Run() {
 }
 
 func (router *Config) InitRoutes() {
-	//router.initLandingRoute()
+	router.initLandingRoute()
 	router.initHealthRoute()
 	router.versionChecker()
 	router.initApis()

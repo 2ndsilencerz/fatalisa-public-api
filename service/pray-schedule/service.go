@@ -195,8 +195,6 @@ func getData(req *model.Request) *model.Response {
 func GetSchedule(c *fiber.Ctx) *model.Response {
 	req := model.Request{}
 	if err := c.BodyParser(&req); err != nil {
-		log.Error(err)
-		log.Info("Request method is " + c.Method())
 		req.City = c.Params("city")
 		req.Date = time.Now().Format("2006/01/02")
 	}

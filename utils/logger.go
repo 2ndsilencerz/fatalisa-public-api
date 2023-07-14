@@ -15,8 +15,8 @@ const (
 )
 
 var (
-	FileLogName = FileLogLocation + "gin-" + GetPodName() + ".log"
-	fmtBuffer   = sync.Pool{
+	//FileLogName = FileLogLocation + "api-" + GetPodName() + ".log"
+	fmtBuffer = sync.Pool{
 		New: func() interface{} {
 			return new(bytes.Buffer)
 		},
