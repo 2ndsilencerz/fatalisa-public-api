@@ -1,0 +1,381 @@
+definitions:
+  common.Body:
+    properties:
+      message:
+        type: string
+    type: object
+  cpm.Data:
+    properties:
+      applicationCryptogram:
+        type: string
+      applicationDefinitionFileName:
+        type: string
+      applicationInterchangeProfile:
+        type: string
+      applicationLabel:
+        type: string
+      applicationPAN:
+        type: string
+      applicationSpecificTransparentTemplate:
+        type: string
+      applicationTemplate:
+        type: string
+      applicationTransactionCounter:
+        type: string
+      applicationVersionNumber:
+        type: string
+      cardHolderName:
+        type: string
+      cryptogramInformationData:
+        type: string
+      issuerApplicationData:
+        type: string
+      issuerQRISData:
+        type: string
+      issuerURL:
+        type: string
+      languagePreference:
+        type: string
+      last4DigitPAN:
+        type: string
+      payloadFormatIndicator:
+        type: string
+      paymentAccountReference:
+        type: string
+      tokenRequesterID:
+        type: string
+      track2EquivalentData:
+        type: string
+      unpredictableNumber:
+        type: string
+    type: object
+  cpm.Request:
+    properties:
+      raw:
+        type: string
+    required:
+    - raw
+    type: object
+  model.City:
+    properties:
+      cityName:
+        type: string
+    type: object
+  model.CityList:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/model.City'
+        type: array
+    type: object
+  model.Response:
+    properties:
+      ashr:
+        type: string
+      date:
+        type: string
+      dzuhur:
+        type: string
+      fajr:
+        type: string
+      imsyak:
+        type: string
+      isha:
+        type: string
+      maghrib:
+        type: string
+      month:
+        type: string
+      syuruq:
+        type: string
+      year:
+        type: string
+    required:
+    - ashr
+    - date
+    - dzuhur
+    - fajr
+    - imsyak
+    - isha
+    - maghrib
+    - month
+    - syuruq
+    - year
+    type: object
+  mpm.Data:
+    properties:
+      additionalConsumerDataRequest:
+        type: string
+      additionalDataField:
+        type: string
+      billNumber:
+        type: string
+      countryCode:
+        type: string
+      crc:
+        type: string
+      customerLabel:
+        type: string
+      globalUniqueIdentifier:
+        type: string
+      languagePreference:
+        type: string
+      loyaltyNumber:
+        type: string
+      merchantAccountInformation:
+        type: string
+      merchantCategoryCode:
+        type: string
+      merchantCity:
+        type: string
+      merchantCityAlt:
+        type: string
+      merchantCriteria:
+        type: string
+      merchantID:
+        type: string
+      merchantName:
+        type: string
+      merchantNameAlt:
+        type: string
+      merchantPAN:
+        type: string
+      mobileNumber:
+        type: string
+      payloadFormatIndicator:
+        type: string
+      pointOfInitiationMethod:
+        type: string
+      postalCode:
+        type: string
+      purposeOfTransaction:
+        type: string
+      referenceLabel:
+        type: string
+      storeLabel:
+        type: string
+      terminalLabel:
+        type: string
+      tipFixedValue:
+        type: string
+      tipIndicator:
+        type: string
+      tipPercentageValue:
+        type: string
+      transactionAmount:
+        type: string
+      transactionCurrency:
+        type: string
+    type: object
+  mpm.Request:
+    properties:
+      raw:
+        type: string
+    required:
+    - raw
+    type: object
+info:
+  contact: {}
+paths:
+  /api/pray-schedule:
+    post:
+      consumes:
+      - application/json
+      description: Get Schedule By City and Date
+      parameters:
+      - description: data
+        in: body
+        name: city
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: PrayScheduleCityPost
+      tags:
+      - Pray-Schedule
+  /api/pray-schedule/:city:
+    get:
+      consumes:
+      - application/json
+      description: Get Schedule By City
+      parameters:
+      - description: city
+        in: path
+        name: city
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: PrayScheduleCity
+      tags:
+      - Pray-Schedule
+  /api/pray-schedule/city-list:
+    get:
+      consumes:
+      - application/json
+      description: Get Available City List
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.CityList'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: PrayScheduleCityList
+      tags:
+      - Pray-Schedule
+  /api/qris/cpm:
+    post:
+      consumes:
+      - application/json
+      description: Parse CPM by raw body
+      parameters:
+      - description: data
+        in: body
+        name: raw
+        required: true
+        schema:
+          $ref: '#/definitions/cpm.Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/cpm.Data'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: ParseCpm
+      tags:
+      - CPM
+  /api/qris/mpm:
+    post:
+      consumes:
+      - application/json
+      description: Parse MPM by raw body
+      parameters:
+      - description: data
+        in: body
+        name: raw
+        required: true
+        schema:
+          $ref: '#/definitions/mpm.Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/mpm.Data'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: ParseMpm
+      tags:
+      - MPM
+  /api/qris/mpm/:raw:
+    get:
+      consumes:
+      - application/json
+      description: Parse MPM by parameter
+      parameters:
+      - description: raw
+        in: path
+        name: raw
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/mpm.Data'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: ParseMpm
+      tags:
+      - MPM
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Health Check
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.Body'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: HealthCheck
+      tags:
+      - Default
+  /version:
+    get:
+      consumes:
+      - application/json
+      description: Show Version
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.Body'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: VersionChecker
+      tags:
+      - Default
+swagger: "2.0"

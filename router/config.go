@@ -52,6 +52,7 @@ func (router *Config) Run() {
 func (router *Config) InitRoutes() {
 	router.initLandingRoute()
 	router.initHealthRoute()
+	router.initSwagger()
 	router.versionChecker()
 	router.initApis()
 	router.initWebRoute()
