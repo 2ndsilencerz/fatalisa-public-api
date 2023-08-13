@@ -1,6 +1,7 @@
-package kemenag
+package main
 
 import (
+	"fatalisa-public-api/service/pray-schedule/kemenag"
 	"fmt"
 	"github.com/subchen/go-log"
 	"strconv"
@@ -9,14 +10,17 @@ import (
 )
 
 const (
-	cityTestKemenag     = "KOTA JAKARTA"
 	provinceTestKemenag = "DKI JAKARTA"
 )
 
 var err error
 
+func init() {
+	kemenag.Init()
+}
+
 func TestGetProvince(t *testing.T) {
-	res := *GetProvinces()
+	res := kemenag.GetProvinces()
 	log.Info(res)
 	if string(res[provinceTestKemenag]) == "" {
 		t.Error()
@@ -25,9 +29,9 @@ func TestGetProvince(t *testing.T) {
 }
 
 func TestGetCity(t *testing.T) {
-	resProvinces := *GetProvinces()
+	resProvinces := kemenag.GetProvinces()
 	log.Info(resProvinces)
-	resCities := *GetCities(string(resProvinces[provinceTestKemenag]))
+	resCities := kemenag.GetCities(string(resProvinces[provinceTestKemenag]))
 	log.Info(resCities)
 	if string(resCities[cityTestKemenag]) == "" {
 		t.Error()
@@ -36,9 +40,9 @@ func TestGetCity(t *testing.T) {
 }
 
 func TestGetSchedule(t *testing.T) {
-	resProvinces := *GetProvinces()
+	resProvinces := kemenag.GetProvinces()
 	log.Info(resProvinces[provinceTestKemenag])
-	resCities := *GetCities(string(resProvinces[provinceTestKemenag]))
+	resCities := kemenag.GetCities(string(resProvinces[provinceTestKemenag]))
 	if resCities[cityTestKemenag] == "" {
 		t.Error()
 		return
@@ -54,7 +58,7 @@ func TestGetSchedule(t *testing.T) {
 	}
 	log.Info(provinceTestKemenag + " " + cityTestKemenag + " " + string(resCities[cityTestKemenag]) + " " +
 		fmt.Sprint(thisMonth) + " " + fmt.Sprint(thisYear))
-	resSchedule := GetSchedule(string(resProvinces[provinceTestKemenag]), string(resCities[cityTestKemenag]),
+	resSchedule := kemenag.GetSchedule(string(resProvinces[provinceTestKemenag]), string(resCities[cityTestKemenag]),
 		thisMonth, thisYear)
 	if resSchedule.Subuh == "" {
 		t.Error()

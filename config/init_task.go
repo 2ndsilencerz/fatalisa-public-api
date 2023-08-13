@@ -2,6 +2,7 @@ package config
 
 import (
 	"fatalisa-public-api/service/common"
+	"fatalisa-public-api/service/pray-schedule/kemenag"
 	prayschedule "fatalisa-public-api/service/pray-schedule/pkpu"
 	"fatalisa-public-api/utils"
 	"github.com/subchen/go-log"
@@ -48,6 +49,10 @@ func init() {
 		log.Warn(err)
 		utils.Mkdir(scheduleDir)
 	}
+}
+
+func init() {
+	kemenag.Init()
 }
 
 // run scheduled DB check on another routine

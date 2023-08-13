@@ -1,0 +1,15 @@
+package main
+
+import (
+	"fatalisa-public-api/service/pray-schedule/pkpu"
+	"testing"
+)
+
+func TestGetDataPkpu(t *testing.T) {
+	x := 10
+	res := pkpu.GetDataPkpu(x)
+	if res == nil {
+		t.Error()
+		return
+	}
+}

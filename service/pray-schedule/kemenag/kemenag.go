@@ -64,21 +64,19 @@ var (
 	BimasislamSession string
 )
 
-func init() {
-	Init()
-}
-
 func Init() {
-	provinces := *GetProvinces()
+	provinces := GetProvinces()
 	if _, err := os.Stat(utils.GetWorkingDir() + provinceLocation); err != nil {
-		saveProvinceMap(provinces)
+		go saveProvinceMap(provinces)
 	}
 	for _, provinceCode := range provinces {
-		cities := *GetCities(string(provinceCode))
-		saveCityMap(cities, string(provinceCode))
+		cities := GetCities(string(provinceCode))
+		if _, err := os.Stat(utils.GetWorkingDir() + strings.Replace(cityLocation, "{}", string(provinceCode), -1)); err != nil {
+			go saveCityMap(cities, string(provinceCode))
+		}
 	}
 	// for initializing Phpsessid and BimasislamSession values
-	requestProvinces(nil)
+	go requestProvinces(nil)
 }
 
 func requestProvinces(response *http.Response) *http.Response {
@@ -211,26 +209,26 @@ func (schedule *Schedule) parse(response *http.Response) {
 	}
 }
 
-func GetProvinces() *ProvinceMapping {
+func GetProvinces() ProvinceMapping {
 	var province ProvinceMapping
-	if province = *readProvinceMap(); province == nil || len(province) <= 0 {
+	if province = readProvinceMap(); province == nil {
 		response := requestProvinces(nil)
 		htmlContent, _ := html.Parse(response.Body)
 		province = make(ProvinceMapping)
 		province.parseHtml(htmlContent)
 	}
-	return &province
+	return province
 }
 
-func GetCities(provinceCode string) *CityMapping {
+func GetCities(provinceCode string) CityMapping {
 	var cities CityMapping
-	if cities = *readCityMap(provinceCode); cities == nil || len(cities) <= 0 {
+	if cities = readCityMap(provinceCode); cities == nil {
 		response := requestCities(provinceCode)
 		htmlContent, _ := html.Parse(response.Body)
 		cities = make(CityMapping)
 		cities.parseHtml(htmlContent)
 	}
-	return &cities
+	return cities
 }
 
 func GetSchedule(provinceCode, cityCode string, month, year int) Daily {
@@ -258,10 +256,10 @@ func GetData(req *model.Request) *model.Response {
 	req.City = strings.TrimSpace(req.City)
 	//log.Info(req.City)
 
-	provinces := *GetProvinces()
+	provinces := GetProvinces()
 	for _, provinceCode := range provinces {
 
-		cities := *GetCities(string(provinceCode))
+		cities := GetCities(string(provinceCode))
 		if cities[CityName(req.City)] != "" {
 			province = string(provinceCode)
 			city = string(cities[CityName(req.City)])
@@ -288,9 +286,9 @@ func GetData(req *model.Request) *model.Response {
 // GetCityList used to get city list that can be used to get pray schedule
 func GetCityList() interface{} {
 	res := model.CityList{}
-	provinces := *GetProvinces()
+	provinces := GetProvinces()
 	for _, provinceCode := range provinces {
-		cities := *GetCities(string(provinceCode))
+		cities := GetCities(string(provinceCode))
 
 		for city := range cities {
 			currCity := &model.City{}
@@ -329,7 +327,7 @@ func saveCityMap(mapping CityMapping, provinceCode string) {
 	}
 }
 
-func readProvinceMap() *ProvinceMapping {
+func readProvinceMap() ProvinceMapping {
 	file, err := os.ReadFile(utils.GetWorkingDir() + provinceLocation)
 	if err != nil {
 		log.Error(err)
@@ -341,10 +339,10 @@ func readProvinceMap() *ProvinceMapping {
 		log.Error(err)
 		return nil
 	}
-	return &mapping
+	return mapping
 }
 
-func readCityMap(provinceCode string) *CityMapping {
+func readCityMap(provinceCode string) CityMapping {
 	file, err := os.ReadFile(utils.GetWorkingDir() + strings.Replace(cityLocation, "{}", provinceCode, -1))
 	if err != nil {
 		log.Error(err)
@@ -356,5 +354,5 @@ func readCityMap(provinceCode string) *CityMapping {
 		log.Error(err)
 		return nil
 	}
-	return &mapping
+	return mapping
 }
