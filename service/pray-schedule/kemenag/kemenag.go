@@ -213,7 +213,7 @@ func (schedule *Schedule) parse(response *http.Response) {
 
 func GetProvinces() *ProvinceMapping {
 	var province ProvinceMapping
-	if province = *readProvinceMap(); len(province) <= 0 {
+	if province = *readProvinceMap(); province == nil || len(province) <= 0 {
 		response := requestProvinces(nil)
 		htmlContent, _ := html.Parse(response.Body)
 		province = make(ProvinceMapping)
@@ -224,7 +224,7 @@ func GetProvinces() *ProvinceMapping {
 
 func GetCities(provinceCode string) *CityMapping {
 	var cities CityMapping
-	if cities = *readCityMap(provinceCode); len(cities) <= 0 {
+	if cities = *readCityMap(provinceCode); cities == nil || len(cities) <= 0 {
 		response := requestCities(provinceCode)
 		htmlContent, _ := html.Parse(response.Body)
 		cities = make(CityMapping)
