@@ -1,4 +1,4 @@
-package pray_schedule
+package pkpu
 
 import "testing"
 

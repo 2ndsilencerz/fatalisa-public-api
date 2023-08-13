@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fatalisa-public-api/router"
-	pray_schedule "fatalisa-public-api/service/pray-schedule"
 	"fatalisa-public-api/service/pray-schedule/model"
+	prayschedulepkpu "fatalisa-public-api/service/pray-schedule/pkpu"
 	"fatalisa-public-api/service/qris/model/cpm"
 	"fatalisa-public-api/service/qris/model/mpm"
 	"fmt"
@@ -145,7 +145,7 @@ func TestParseCpmPost(t *testing.T) {
 
 func init() {
 	log.Info("Downloading pray schedule for test")
-	pray_schedule.DownloadFile(83)
+	prayschedulepkpu.DownloadFile(83)
 }
 
 func TestGetSchedulePost(t *testing.T) {

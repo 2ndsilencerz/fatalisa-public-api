@@ -1,7 +1,8 @@
-package pray_schedule
+package pkpu
 
 import (
 	"bytes"
+	"encoding/xml"
 	"fatalisa-public-api/service/pray-schedule/model"
 	"fatalisa-public-api/utils"
 	"github.com/subchen/go-log"
@@ -9,8 +10,20 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
+	"sync"
 	"time"
 )
+
+const totalSchedules = 308
+const maxSimultaneousDownloadTask = 3
+const ScheduleFilesDir = "schedule/"
+const filenamePrefix = "jadwal-"
+const filenameExtension = ".xml"
+
+var downloadTask = 0
+var downloadGroup = sync.WaitGroup{}
+var yearSchedule string
 
 // Header is the header of xml used to parse schedule data downloaded
 type Header struct {
@@ -49,11 +62,11 @@ func PrayScheduleDownload() {
 	downloadGroup.Wait()
 }
 
-func GetDataPkpu(x int) *http.Response {
-	cityCode := strconv.Itoa(x)
+func GetDataPkpu(code int) *http.Response {
+	cityCode := strconv.Itoa(code)
 
 	url := "http://jadwalsholat.pkpu.or.id/export.php"
-	contentType := "application/x-www-form-urlencoded"
+	contentType := "application/code-www-form-urlencoded"
 	body := "period=3" + "&" + // 3 for all year schedule
 		"y=" + yearSchedule + "&" + // year selection
 		"radio=1" + "&" +
@@ -104,11 +117,11 @@ func GetDataPkpu(x int) *http.Response {
 City code used here are an int starting with 1,
 and it's mapping isn't available since the source are from http://jadwalsholat.pkpu.or.id/
 */
-func DownloadFile(x int) {
+func DownloadFile(code int) {
 	var data *Header
 
 	// Download
-	if res := GetDataPkpu(x); res != nil {
+	if res := GetDataPkpu(code); res != nil {
 		// Create dir
 		if _, err := os.Stat(ScheduleFilesDir); err != nil {
 			log.Warn(err)
@@ -118,7 +131,7 @@ func DownloadFile(x int) {
 		}
 
 		// Create file
-		fileName := utils.GetWorkingDir() + ScheduleFilesDir + filenamePrefix + strconv.Itoa(x) + filenameExtension
+		fileName := utils.GetWorkingDir() + ScheduleFilesDir + filenamePrefix + strconv.Itoa(code) + filenameExtension
 		file := utils.CreateFile(fileName)
 		if file != nil {
 			body := res.Body
@@ -153,7 +166,7 @@ func DownloadFile(x int) {
 	}
 }
 
-func getData(req *model.Request) *model.Response {
+func GetData(req *model.Request) *model.Response {
 	responseData := model.Response{}
 	fileName := ScheduleFilesDir + filenamePrefix + req.City + filenameExtension
 	if data := readFile(fileName); data.Version != "" && data.City == req.City {
@@ -167,4 +180,40 @@ func getData(req *model.Request) *model.Response {
 		}
 	}
 	return &responseData
+}
+
+func readFile(fileName string) *Header {
+	res := Header{}
+	if file, errRead := os.ReadFile(fileName); errRead != nil {
+		log.Error(errRead)
+	} else if errParse := xml.Unmarshal(file, &res); errParse != nil {
+		log.Error(errParse)
+	}
+	return &res
+}
+
+func closeResponseForDownload(response *http.Response) {
+	if err := response.Body.Close(); err != nil {
+		log.Error(err)
+	}
+}
+
+// GetCityList used to get city list that can be used to get pray schedule
+func GetCityList() interface{} {
+	res := model.CityList{}
+	if files, err := os.ReadDir(ScheduleFilesDir); err != nil {
+		log.Error(err)
+	} else {
+		for _, file := range files {
+			if strings.Contains(file.Name(), filenamePrefix) {
+				cityName := strings.ReplaceAll(file.Name(), filenamePrefix, "")
+				cityName = strings.ReplaceAll(cityName, filenameExtension, "")
+				city := &model.City{}
+				city.Name = cityName
+				res.List = append(res.List, city)
+			}
+		}
+	}
+	log.Info(utils.Jsonify(res))
+	return &res
 }
