@@ -69,7 +69,7 @@ func init() {
 }
 
 func Init() {
-	if _, err := os.ReadFile(utils.GetWorkingDir() + provinceLocation); err != nil {
+	if _, err := os.Stat(utils.GetWorkingDir() + provinceLocation); err != nil {
 		provinces := *GetProvinces()
 		saveProvinceMap(provinces)
 		for _, provinceCode := range provinces {
