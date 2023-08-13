@@ -25,7 +25,7 @@ func (router *Config) Get() {
 	)
 	router.Fiber.Use(recover.New())
 	router.Fiber.Use(fiberLogger.New(fiberLogger.Config{
-		Format: "${time} [GoFiber] :" +
+		Format: "${time} [INFO] :" +
 			fmt.Sprintf("%4s", "${status}") +
 			"-" +
 			fmt.Sprintf("%11s", "${latency}") +

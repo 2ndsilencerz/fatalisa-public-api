@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fatalisa-public-api/router"
+	pray_schedule "fatalisa-public-api/service/pray-schedule"
 	"fatalisa-public-api/service/pray-schedule/model"
 	prayschedulepkpu "fatalisa-public-api/service/pray-schedule/pkpu"
 	"fatalisa-public-api/service/qris/model/cpm"
@@ -12,6 +13,7 @@ import (
 	"github.com/subchen/go-log"
 	"io"
 	"net/http"
+	"os"
 	"reflect"
 	"strconv"
 	"testing"
@@ -19,11 +21,12 @@ import (
 )
 
 const (
-	apiUri                  = "/api"
-	qrisUri                 = apiUri + "/qris"
-	mpmUri                  = qrisUri + "/mpm"
-	cpmUri                  = qrisUri + "/cpm"
-	cityTest                = "jakarta"
+	apiUri  = "/api"
+	qrisUri = apiUri + "/qris"
+	mpmUri  = qrisUri + "/mpm"
+	cpmUri  = qrisUri + "/cpm"
+	//cityTestPkpu            = "jakarta"
+	cityTestKemenag         = "KOTA JAKARTA"
 	prayScheduleUri         = apiUri + "/pray-schedule"
 	prayScheduleCityListUri = prayScheduleUri + "/city-list"
 )
@@ -144,13 +147,16 @@ func TestParseCpmPost(t *testing.T) {
 }
 
 func init() {
-	log.Info("Downloading pray schedule for test")
-	prayschedulepkpu.DownloadFile(83)
+	if os.Getenv("PROVIDER") == pray_schedule.ProviderPkpu {
+		log.Info("Downloading pray schedule for test")
+		prayschedulepkpu.DownloadFile(83)
+	}
 }
 
 func TestGetSchedulePost(t *testing.T) {
+	_ = os.Setenv("PROVIDER", pray_schedule.ProviderKemenag)
 	req := &model.Request{
-		City: "jakarta",
+		City: cityTestKemenag,
 		Date: time.Now().Format("2006/01/02"),
 	}
 
@@ -169,8 +175,9 @@ func TestGetSchedulePost(t *testing.T) {
 }
 
 func TestGetScheduleGet(t *testing.T) {
+	_ = os.Setenv("PROVIDER", pray_schedule.ProviderKemenag)
 	dataRes := &model.Response{}
-	rawRes := sendData(http.MethodGet, prayScheduleUri+"/"+cityTest, nil)
+	rawRes := sendData(http.MethodGet, prayScheduleUri+"/"+cityTestKemenag, nil)
 	if err := json.Unmarshal(rawRes, dataRes); err != nil {
 		t.Error(err)
 	} else {
@@ -184,13 +191,14 @@ func TestGetScheduleGet(t *testing.T) {
 }
 
 func TestScheduleCityList(t *testing.T) {
+	_ = os.Setenv("PROVIDER", pray_schedule.ProviderKemenag)
 	var dataRes model.CityList
 	rawRes := sendData(http.MethodGet, prayScheduleCityListUri, nil)
 	if err := json.Unmarshal(rawRes, &dataRes); err != nil {
 		t.Error(err)
 	} else {
 		for _, data := range dataRes.List {
-			if data.Name == cityTest {
+			if data.Name == cityTestKemenag {
 				return
 			}
 		}

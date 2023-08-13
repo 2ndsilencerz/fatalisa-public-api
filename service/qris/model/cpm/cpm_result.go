@@ -1,6 +1,7 @@
 package cpm
 
 import (
+	"fatalisa-public-api/database"
 	"fatalisa-public-api/database/config"
 )
 
@@ -58,12 +59,15 @@ func (data *Data) Parse(raw string) {
 }
 
 func (data *Data) SaveToDB() {
-	mariadb := config.InitMariaDB()
+	var mariadb database.GormDBInterface
+	mariadb = config.InitMariaDB()
 	mariadb.Write(data)
 
-	postgres := config.InitPostgres()
+	var postgres database.GormDBInterface
+	postgres = config.InitPostgres()
 	postgres.Write(data)
 
-	mongo := config.InitMongoDB()
+	var mongo database.MongoDBInterface
+	mongo = config.InitMongoDB()
 	mongo.InsertOne("CPM", data)
 }

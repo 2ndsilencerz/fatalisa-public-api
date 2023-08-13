@@ -2,7 +2,7 @@ package config
 
 import (
 	"fatalisa-public-api/service/common"
-	prayschedule "fatalisa-public-api/service/pray-schedule"
+	prayschedule "fatalisa-public-api/service/pray-schedule/pkpu"
 	"fatalisa-public-api/utils"
 	"github.com/subchen/go-log"
 	"os"

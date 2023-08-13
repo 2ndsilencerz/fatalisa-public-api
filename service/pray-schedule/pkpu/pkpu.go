@@ -62,8 +62,8 @@ func PrayScheduleDownload() {
 	downloadGroup.Wait()
 }
 
-func GetDataPkpu(code int) *http.Response {
-	cityCode := strconv.Itoa(code)
+func GetDataPkpu(cityCode int) *http.Response {
+	cityCodeStr := strconv.Itoa(cityCode)
 
 	url := "http://jadwalsholat.pkpu.or.id/export.php"
 	contentType := "application/code-www-form-urlencoded"
@@ -76,7 +76,7 @@ func GetDataPkpu(code int) *http.Response {
 		"edition=1" + "&" +
 		"compress=0" + "&" +
 		"adzanCountry=indonesia" + "&" +
-		"adzanCity=" + cityCode + "&" + // city selection
+		"adzanCity=" + cityCodeStr + "&" + // city selection
 		"language=indonesian" + "&" + // id language selection
 		"algo=1" + "&" +
 		"cbxViewParam=1" + "&" +
@@ -117,21 +117,16 @@ func GetDataPkpu(code int) *http.Response {
 City code used here are an int starting with 1,
 and it's mapping isn't available since the source are from http://jadwalsholat.pkpu.or.id/
 */
-func DownloadFile(code int) {
+func DownloadFile(cityCode int) {
 	var data *Header
 
 	// Download
-	if res := GetDataPkpu(code); res != nil {
+	if res := GetDataPkpu(cityCode); res != nil {
 		// Create dir
-		if _, err := os.Stat(ScheduleFilesDir); err != nil {
-			log.Warn(err)
-			workDir := utils.GetWorkingDir()
-			createDir := workDir + ScheduleFilesDir
-			utils.Mkdir(createDir)
-		}
+		utils.CheckAndCreateDir(ScheduleFilesDir)
 
 		// Create file
-		fileName := utils.GetWorkingDir() + ScheduleFilesDir + filenamePrefix + strconv.Itoa(code) + filenameExtension
+		fileName := utils.GetWorkingDir() + ScheduleFilesDir + filenamePrefix + strconv.Itoa(cityCode) + filenameExtension
 		file := utils.CreateFile(fileName)
 		if file != nil {
 			body := res.Body
@@ -148,7 +143,7 @@ func DownloadFile(code int) {
 				log.Error(errCloseFile)
 			}
 
-			// Rename the file postfix from city code to actual city name
+			// Rename the file postfix from city cityCode to actual city name
 			data = readFile(fileName)
 			newFileName := ScheduleFilesDir + filenamePrefix + data.City + filenameExtension
 			log.Info("Renaming file from ", fileName, " to ", filenamePrefix+data.City+filenameExtension)

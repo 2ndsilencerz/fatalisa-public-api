@@ -11,6 +11,7 @@ require (
 	github.com/subchen/go-log v3.0.0+incompatible
 	github.com/swaggo/swag v1.16.1
 	go.mongodb.org/mongo-driver v1.12.1
+	golang.org/x/net v0.14.0
 	gorm.io/gorm v1.25.3
 )
 
