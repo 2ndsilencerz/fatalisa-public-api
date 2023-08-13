@@ -69,13 +69,13 @@ func init() {
 }
 
 func Init() {
+	provinces := *GetProvinces()
 	if _, err := os.Stat(utils.GetWorkingDir() + provinceLocation); err != nil {
-		provinces := *GetProvinces()
 		saveProvinceMap(provinces)
-		for _, provinceCode := range provinces {
-			cities := *GetCities(string(provinceCode))
-			saveCityMap(cities, string(provinceCode))
-		}
+	}
+	for _, provinceCode := range provinces {
+		cities := *GetCities(string(provinceCode))
+		saveCityMap(cities, string(provinceCode))
 	}
 	// for initializing Phpsessid and BimasislamSession values
 	requestProvinces(nil)
