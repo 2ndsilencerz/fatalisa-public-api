@@ -23,8 +23,8 @@ const (
 	getSchedule = baseUrl + "/ajax/getShalatbln"
 
 	ScheduleFilesDir = "schedule/"
-	provinceLocation = ScheduleFilesDir + "/province.json"
-	cityLocation     = ScheduleFilesDir + "/city-{}.json"
+	provinceLocation = ScheduleFilesDir + "province.json"
+	cityLocation     = ScheduleFilesDir + "city-{}.json"
 )
 
 type (
