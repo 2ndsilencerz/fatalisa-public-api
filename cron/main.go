@@ -1,11 +1,11 @@
 package main
 
 import (
-	prayScheduleSvc "fatalisa-public-api/service/pray-schedule"
+	praySchedulePkpuSvc "fatalisa-public-api/service/pray-schedule/pkpu"
 )
 
 // This is a onetime run to download all pray schedule data
 // use this with cron
 func main() {
-	prayScheduleSvc.PrayScheduleDownload()
+	praySchedulePkpuSvc.PrayScheduleDownload()
 }

@@ -1,6 +1,7 @@
 package mpm
 
 import (
+	"fatalisa-public-api/database"
 	"fatalisa-public-api/database/config"
 	"fmt"
 )
@@ -137,12 +138,15 @@ func (data *Data) Parse(raw string) {
 }
 
 func (data *Data) SaveToDB() {
-	mariaDB := config.InitMariaDB()
-	mariaDB.Write(data)
+	var mariadb database.GormDBInterface
+	mariadb = config.InitMariaDB()
+	mariadb.Write(data)
 
-	postgres := config.InitPostgres()
+	var postgres database.GormDBInterface
+	postgres = config.InitPostgres()
 	postgres.Write(data)
 
-	mongo := config.InitMongoDB()
+	var mongo database.MongoDBInterface
+	mongo = config.InitMongoDB()
 	mongo.InsertOne("MPM", data)
 }
