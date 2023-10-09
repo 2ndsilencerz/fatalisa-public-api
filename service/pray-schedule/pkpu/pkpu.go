@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fatalisa-public-api/service/pray-schedule/model"
+	internalModel "fatalisa-public-api/service/pray-schedule/pkpu/model"
 	"fatalisa-public-api/utils"
 	"github.com/subchen/go-log"
 	"io"
@@ -24,29 +25,6 @@ const filenameExtension = ".xml"
 var downloadTask = 0
 var downloadGroup = sync.WaitGroup{}
 var yearSchedule string
-
-// Header is the header of xml used to parse schedule data downloaded
-type Header struct {
-	Adzan `xml:"adzan"`
-}
-
-// Adzan used as model to fetch schedule data from xml
-type Adzan struct {
-	Version   string `xml:"version"`
-	Site      string `xml:"site"`
-	Country   string `xml:"country"`
-	City      string `xml:"city"`
-	Parameter `xml:"parameter"`
-	Data      []model.Response `xml:"data" json:"data"`
-}
-
-// Parameter used to get misc data from schedule in xml
-type Parameter struct {
-	Longitude string `xml:"longitude"`
-	Latitude  string `xml:"latitude"`
-	Direction string `xml:"direction"`
-	Distance  string `xml:"distance"`
-}
 
 // PrayScheduleDownload used in cronjob for downloading all cities schedule
 func PrayScheduleDownload() {
@@ -118,7 +96,7 @@ City code used here are an int starting with 1,
 and it's mapping isn't available since the source are from http://jadwalsholat.pkpu.or.id/
 */
 func DownloadFile(cityCode int) {
-	var data *Header
+	var data *internalModel.Header
 
 	// Download
 	if res := GetDataPkpu(cityCode); res != nil {
@@ -177,8 +155,8 @@ func GetData(req *model.Request) *model.Response {
 	return &responseData
 }
 
-func readFile(fileName string) *Header {
-	res := Header{}
+func readFile(fileName string) *internalModel.Header {
+	res := internalModel.Header{}
 	if file, errRead := os.ReadFile(fileName); errRead != nil {
 		log.Error(errRead)
 	} else if errParse := xml.Unmarshal(file, &res); errParse != nil {
