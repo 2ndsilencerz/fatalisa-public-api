@@ -187,6 +187,7 @@ func GetData(req *model.Request) *model.Response {
 	// fix city request
 	req.City, _ = url.QueryUnescape(req.City)
 	req.City = strings.TrimSpace(req.City)
+	req.City = strings.ToUpper(req.City)
 	//log.Info(req.City)
 
 	provinces := GetProvinces()
