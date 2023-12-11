@@ -12,8 +12,14 @@ import (
 
 func (router *Config) initLandingRoute() {
 	router.Fiber.Get("/", func(c *fiber.Ctx) error {
-		return c.Render("index", web.Index())
+		return c.Render("index", web.Index(), web.MainLayout(c), web.Layout())
 	})
+	//staticWeb := router.Fiber.Group("/web")
+	//{
+	//	staticWeb.Get("/:path", func(c *fiber.Ctx) error {
+	//		return c.Render(c.Params(":path", ""), web.DynamicContent(c))
+	//	})
+	//}
 }
 
 // initHealthRoute godoc

@@ -1,6 +1,9 @@
 package web
 
-import bingwallpaper "fatalisa-public-api/service/web/utils/bing-wallpaper"
+import (
+	bingwallpaper "fatalisa-public-api/service/web/utils/bing-wallpaper"
+	"time"
+)
 
 const (
 // webpagesDir    = "./service/web/pages"
@@ -26,12 +29,12 @@ func BackgroundImage() bingwallpaper.ImageData {
 	return bingwallpaper.GetTodayWallpaper()
 }
 
-func WebTemplate() (*BodyExample, *FooterTexts) {
+func Page() (*BodyExample, *FooterTexts) {
 	footer := FooterTexts{
 		BgImgUrl:       BackgroundImage().Url,
 		BgImgCopyright: BackgroundImage().Copyright,
 		Text:           "Fatalisa Public API",
-		Year:           "2023",
+		Year:           time.Now().Format("2006"),
 		Version:        "1.0.0",
 	}
 

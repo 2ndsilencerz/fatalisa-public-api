@@ -17,7 +17,7 @@ type Config struct {
 }
 
 func (router *Config) Get() {
-	engine := htmlEngine.New("service/web/pages", ".html")
+	engine := htmlEngine.New("service/web/pages", ".gohtml")
 	router.Fiber = fiber.New(
 		fiber.Config{
 			Views: engine,
@@ -33,6 +33,11 @@ func (router *Config) Get() {
 			"${path}\n",
 		TimeFormat: "2006/01/02 15:04:05 -0700",
 	}))
+
+	// 404 Handler
+	//router.Fiber.Use(func(c *fiber.Ctx) error {
+	//	return c.SendStatus(404) // => 404 "Not Found"
+	//})
 }
 
 func (router *Config) Run() {

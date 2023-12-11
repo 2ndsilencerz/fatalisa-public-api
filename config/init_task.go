@@ -39,16 +39,10 @@ func init() {
 // check directory for service if existed
 // when it's not, create one
 func init() {
-	logDir := utils.GetWorkingDir() + utils.FileLogLocation
-	if _, err := os.Stat(logDir); err != nil {
-		log.Warn(err)
-		utils.Mkdir(logDir)
-	}
-	scheduleDir := utils.GetWorkingDir() + prayschedule.ScheduleFilesDir
-	if _, err := os.Stat(scheduleDir); err != nil {
-		log.Warn(err)
-		utils.Mkdir(scheduleDir)
-	}
+	logDir := utils.FileLogLocation
+	utils.CheckAndCreateDir(logDir)
+	scheduleDir := prayschedule.ScheduleFilesDir
+	utils.CheckAndCreateDir(scheduleDir)
 }
 
 func init() {

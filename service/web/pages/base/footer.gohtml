@@ -1,0 +1,26 @@
+{{define "footer"}}
+<footer class="footer container-fluid position-absolute bottom-0 start-50 translate-middle-x p-2">
+    <div class="container text-center">
+        <div class="row">
+            <div class="col">
+                <a class="link-primary" href="{{.Footer.BgImgUrl}}">
+                    {{.Footer.BgImgCopyright}}
+                </a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{.Footer.Text}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{.Footer.Year}}
+            </div>
+        </div>
+    </div>
+</footer>
+<div class="position-absolute bottom-0 end-0" style="font-size: 10px">
+    {{.Footer.Version}}
+</div>
+{{end}}
