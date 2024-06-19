@@ -7,7 +7,6 @@ import (
 	utils2 "fatalisa-public-api/service/web/utils"
 	"fatalisa-public-api/utils"
 	"github.com/go-redis/redis/v8"
-	"github.com/subchen/go-log"
 	"os"
 	"time"
 )
@@ -29,12 +28,14 @@ func InitRedis() *RedisConf {
 		redisCfg = &RedisConf{}
 		redisCfg.GetSettings()
 
-		rdb := redis.NewClient(&redis.Options{
-			Addr:     redisCfg.Host + ":6379",
-			Password: redisCfg.Pass,
-			DB:       0,
-		})
-		redisCfg.Client = rdb
+		if len(redisCfg.Host) > 0 {
+			rdb := redis.NewClient(&redis.Options{
+				Addr:     redisCfg.Host + ":6379",
+				Password: redisCfg.Pass,
+				DB:       0,
+			})
+			redisCfg.Client = rdb
+		}
 	}
 	return redisCfg
 }
@@ -209,9 +210,10 @@ func (conf *RedisConf) GetKeys(pattern string, ctx context.Context) map[string]s
 }
 
 func (conf *RedisConf) connected(ctx context.Context) bool {
-	if err := conf.Client.Ping(ctx).Err(); err != nil {
-		log.Error(err)
-		return false
+	if len(conf.Host) > 0 {
+		if err, _ := utils2.ErrorHandler(conf.Client.Ping(ctx).Err()); !err {
+			return true
+		}
 	}
-	return true
+	return false
 }
