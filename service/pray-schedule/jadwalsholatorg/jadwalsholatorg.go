@@ -85,12 +85,8 @@ func GetCityList(ctx context.Context) model.CityList {
 
 func GetSchedule(req *model.Request, ctx context.Context) *model.Response {
 	res := model.Response{}
-	today := time.Now().Format("2006-01-02")
-	if len(req.Date) == 0 {
-		req.Date = today
-	}
-
-	dateReq, err := time.Parse("2006-01-02", req.Date)
+	today := time.Now().Format("2006/01/02")
+	dateReq, err := time.Parse("2006/01/02", req.Date)
 	if err, _ := utils2.ErrorHandler(err); err {
 		return &res
 	}
