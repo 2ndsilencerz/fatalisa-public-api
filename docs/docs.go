@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/api/pray-schedule": {
             "post": {
-                "description": "Get Schedule By City and Date",
+                "description": "GetString Schedule By City and Date",
                 "consumes": [
                     "application/json"
                 ],
@@ -59,7 +59,7 @@ const docTemplate = `{
         },
         "/api/pray-schedule/:city": {
             "get": {
-                "description": "Get Schedule By City",
+                "description": "GetString Schedule By City",
                 "consumes": [
                     "application/json"
                 ],
@@ -99,7 +99,7 @@ const docTemplate = `{
         },
         "/api/pray-schedule/city-list": {
             "get": {
-                "description": "Get Available City List",
+                "description": "GetString Available City List",
                 "consumes": [
                     "application/json"
                 ],

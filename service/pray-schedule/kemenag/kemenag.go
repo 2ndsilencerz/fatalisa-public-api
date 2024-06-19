@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	internalModel "fatalisa-public-api/service/pray-schedule/kemenag/model"
 	"fatalisa-public-api/service/pray-schedule/model"
+	utils2 "fatalisa-public-api/service/web/utils"
 	"fatalisa-public-api/utils"
 	"fmt"
 	"github.com/subchen/go-log"
@@ -79,8 +80,7 @@ func requestProvinces(response *http.Response) *http.Response {
 		// do request once more because the first response isn't complete
 		res = requestProvinces(res)
 	}
-	if err != nil {
-		log.Error(err)
+	if err, _ := utils2.ErrorHandler(err); err {
 		return nil
 	}
 	return res
@@ -98,8 +98,7 @@ func requestCities(provinceCode string) *http.Response {
 	req = setCookies(req)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	res, err := client.Do(req)
-	if err != nil {
-		log.Error(err)
+	if err, _ := utils2.ErrorHandler(err); err {
 		return nil
 	}
 	return res
@@ -121,8 +120,7 @@ func requestSchedule(provinceCode, cityCode string, month, year int) *http.Respo
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Accept", "application/json")
 	res, err := client.Do(req)
-	if err != nil {
-		log.Error(err)
+	if err, _ := utils2.ErrorHandler(err); err {
 		return nil
 	}
 	return res
@@ -138,7 +136,7 @@ func setCookies(req *http.Request) *http.Request {
 		Name:  "bimasislam_session",
 		Value: BimasislamSession,
 	})
-	//req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36")
+	//req.Header.SetString("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36")
 	return req
 }
 
@@ -236,41 +234,31 @@ func GetCityList() interface{} {
 
 func saveProvinceMap(mapping internalModel.ProvinceMapping) {
 	jsonMapping, err := json.Marshal(mapping)
-	if err != nil {
-		log.Error(err)
+	if err, _ := utils2.ErrorHandler(err); err {
 		return
 	}
 	utils.CheckAndCreateDir(ScheduleFilesDir)
-	err = os.WriteFile(utils.GetWorkingDir()+provinceLocation, jsonMapping, 0644)
-	if err != nil {
-		log.Error(err)
-	}
+	utils2.ErrorHandler(os.WriteFile(utils.GetWorkingDir()+provinceLocation, jsonMapping, 0644))
 }
 
 func saveCityMap(mapping internalModel.CityMapping, provinceCode string) {
 	jsonMapping, err := json.Marshal(mapping)
-	if err != nil {
-		log.Error(err)
+	if err, _ := utils2.ErrorHandler(err); err {
 		return
 	}
 	utils.CheckAndCreateDir(ScheduleFilesDir)
 	fileName := utils.GetWorkingDir() + strings.Replace(cityLocation, "{}", provinceCode, -1)
-	err = os.WriteFile(fileName, jsonMapping, 0644)
-	if err != nil {
-		log.Error(err)
-	}
+	utils2.ErrorHandler(os.WriteFile(fileName, jsonMapping, 0644))
 }
 
 func readProvinceMap() internalModel.ProvinceMapping {
 	file, err := os.ReadFile(utils.GetWorkingDir() + provinceLocation)
-	if err != nil {
-		log.Error(err)
+	if err, _ := utils2.ErrorHandler(err); err {
 		return nil
 	}
 	var mapping internalModel.ProvinceMapping
 	err = json.Unmarshal(file, &mapping)
-	if err != nil {
-		log.Error(err)
+	if err, _ := utils2.ErrorHandler(err); err {
 		return nil
 	}
 	return mapping
@@ -278,14 +266,12 @@ func readProvinceMap() internalModel.ProvinceMapping {
 
 func readCityMap(provinceCode string) internalModel.CityMapping {
 	file, err := os.ReadFile(utils.GetWorkingDir() + strings.Replace(cityLocation, "{}", provinceCode, -1))
-	if err != nil {
-		log.Error(err)
+	if err, _ := utils2.ErrorHandler(err); err {
 		return nil
 	}
 	var mapping internalModel.CityMapping
 	err = json.Unmarshal(file, &mapping)
-	if err != nil {
-		log.Error(err)
+	if err, _ := utils2.ErrorHandler(err); err {
 		return nil
 	}
 	return mapping

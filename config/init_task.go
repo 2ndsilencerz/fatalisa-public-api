@@ -2,8 +2,8 @@ package config
 
 import (
 	"fatalisa-public-api/service/common"
+	pray_schedule "fatalisa-public-api/service/pray-schedule"
 	"fatalisa-public-api/service/pray-schedule/kemenag"
-	prayschedule "fatalisa-public-api/service/pray-schedule/pkpu"
 	"fatalisa-public-api/utils"
 	"github.com/subchen/go-log"
 	"os"
@@ -38,15 +38,18 @@ func init() {
 
 // check directory for service if existed
 // when it's not, create one
-func init() {
-	logDir := utils.FileLogLocation
-	utils.CheckAndCreateDir(logDir)
-	scheduleDir := prayschedule.ScheduleFilesDir
-	utils.CheckAndCreateDir(scheduleDir)
-}
+//func init() {
+//	logDir := utils.FileLogLocation
+//	utils.CheckAndCreateDir(logDir)
+//	scheduleDir := prayschedule.ScheduleFilesDir
+//	utils.CheckAndCreateDir(scheduleDir)
+//}
 
 func init() {
-	kemenag.Init()
+	provider, _ := os.LookupEnv("PROVIDER")
+	if provider == pray_schedule.ProviderKemenag {
+		kemenag.Init()
+	}
 }
 
 // run scheduled DB check on another routine

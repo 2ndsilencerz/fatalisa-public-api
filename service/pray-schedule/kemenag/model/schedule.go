@@ -2,7 +2,7 @@ package model
 
 import (
 	"encoding/json"
-	"github.com/subchen/go-log"
+	utils2 "fatalisa-public-api/service/web/utils"
 	"io"
 	"net/http"
 )
@@ -18,13 +18,11 @@ type Schedule struct {
 func (schedule *Schedule) Parse(response *http.Response) {
 	// parse response to Schedule
 	raw, err := io.ReadAll(response.Body)
-	if err != nil {
-		log.Error(err)
+	if err, _ := utils2.ErrorHandler(err); err {
 		return
 	}
 	err = json.Unmarshal(raw, &schedule)
-	if err != nil {
-		log.Error(err)
+	if err, _ := utils2.ErrorHandler(err); err {
 		return
 	}
 }

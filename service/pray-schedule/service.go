@@ -1,6 +1,7 @@
 package pray_schedule
 
 import (
+	"fatalisa-public-api/service/pray-schedule/jadwalsholatorg"
 	"fatalisa-public-api/service/pray-schedule/kemenag"
 	"fatalisa-public-api/service/pray-schedule/model"
 	"fatalisa-public-api/service/pray-schedule/pkpu"
@@ -12,8 +13,9 @@ import (
 )
 
 const (
-	ProviderPkpu    = "PKPU"
-	ProviderKemenag = "Kemenag"
+	ProviderPkpu            = "PKPU"
+	ProviderKemenag         = "Kemenag"
+	ProviderJadwalShalatOrg = "JadwalShalatOrg"
 )
 
 var provider string
@@ -32,7 +34,9 @@ func GetSchedule(c *fiber.Ctx) *model.Response {
 	log.Info(utils.Jsonify(req))
 
 	var res *model.Response
-	if provider == ProviderPkpu {
+	if provider == ProviderJadwalShalatOrg {
+		res = jadwalsholatorg.GetSchedule(&req, c.Context())
+	} else if provider == ProviderPkpu {
 		res = pkpu.GetData(&req)
 	} else {
 		res = kemenag.GetData(&req)
@@ -41,9 +45,14 @@ func GetSchedule(c *fiber.Ctx) *model.Response {
 	return res
 }
 
-func GetCityList() interface{} {
-	if provider == ProviderPkpu {
-		return pkpu.GetCityList()
+func GetCityList(c *fiber.Ctx) interface{} {
+	var res interface{}
+	if provider == ProviderJadwalShalatOrg {
+		res = jadwalsholatorg.GetCityList(c.Context())
+	} else if provider == ProviderKemenag {
+		res = kemenag.GetCityList()
+	} else {
+		res = pkpu.GetCityList()
 	}
-	return kemenag.GetCityList()
+	return res
 }

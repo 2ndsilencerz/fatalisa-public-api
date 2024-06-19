@@ -16,7 +16,7 @@ func (router *Config) initLandingRoute() {
 	})
 	//staticWeb := router.Fiber.Group("/web")
 	//{
-	//	staticWeb.Get("/:path", func(c *fiber.Ctx) error {
+	//	staticWeb.GetString("/:path", func(c *fiber.Ctx) error {
 	//		return c.Render(c.Params(":path", ""), web.DynamicContent(c))
 	//	})
 	//}
@@ -59,7 +59,7 @@ func (router *Config) versionChecker() {
 // PrayScheduleCityList godoc
 //
 //	@Summary		PrayScheduleCityList
-//	@Description	Get Available City List
+//	@Description	GetString Available City List
 //	@Tags			Pray-Schedule
 //	@Accept			json
 //	@Produce		json
@@ -69,14 +69,14 @@ func (router *Config) versionChecker() {
 //	@Router			/api/pray-schedule/city-list [get]
 func (router *Config) PrayScheduleCityList() {
 	router.Fiber.Group("/api").Get("/pray-schedule/city-list", func(c *fiber.Ctx) error {
-		return c.JSON(praySchedule.GetCityList())
+		return c.JSON(praySchedule.GetCityList(c))
 	})
 }
 
 // PrayScheduleCity godoc
 //
 //	@Summary		PrayScheduleCity
-//	@Description	Get Schedule By City
+//	@Description	GetString Schedule By City
 //	@Tags			Pray-Schedule
 //	@Accept			json
 //	@Produce		json
@@ -94,7 +94,7 @@ func (router *Config) PrayScheduleCity() {
 // PrayScheduleCityPost godoc
 //
 //	@Summary		PrayScheduleCityPost
-//	@Description	Get Schedule By City and Date
+//	@Description	GetString Schedule By City and Date
 //	@Tags			Pray-Schedule
 //	@Accept			json
 //	@Produce		json

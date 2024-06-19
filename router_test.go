@@ -9,6 +9,7 @@ import (
 	prayschedulepkpu "fatalisa-public-api/service/pray-schedule/pkpu"
 	"fatalisa-public-api/service/qris/model/cpm"
 	"fatalisa-public-api/service/qris/model/mpm"
+	utils2 "fatalisa-public-api/service/web/utils"
 	"fmt"
 	"github.com/subchen/go-log"
 	"io"
@@ -53,14 +54,10 @@ func sendData(method string, uri string, data interface{}) []byte {
 	//httpRes := httptest.NewRecorder()
 	httpReq, err := http.NewRequest(method, uri, bytes.NewBuffer(body))
 	httpReq.Header.Set("Content-Type", "application/json")
-	if err != nil {
-		log.Error(err)
-	} else {
+	if err, _ := utils2.ErrorHandler(err); !err {
 		log.Info("Request is " + fmt.Sprint(httpReq))
 		httpRes, err := routerTest.Fiber.Test(httpReq, -1)
-		if err != nil {
-			log.Error(err)
-		}
+		utils2.ErrorHandler(err)
 		if rawRes, err := io.ReadAll(httpRes.Body); err != nil {
 			log.Error(err)
 		} else {

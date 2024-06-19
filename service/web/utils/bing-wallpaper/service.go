@@ -2,7 +2,7 @@ package bing_wallpaper
 
 import (
 	"encoding/json"
-	"github.com/subchen/go-log"
+	utils2 "fatalisa-public-api/service/web/utils"
 	"io"
 	"net/http"
 )
@@ -24,8 +24,7 @@ type ImageData struct {
 }
 
 func errorExist(err error) bool {
-	if err != nil {
-		log.Error(errorMsg, err)
+	if err, _ := utils2.ErrorHandler(err); !err {
 		return true
 	}
 	return false

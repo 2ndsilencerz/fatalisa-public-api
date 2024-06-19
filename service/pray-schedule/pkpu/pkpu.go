@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"fatalisa-public-api/service/pray-schedule/model"
 	internalModel "fatalisa-public-api/service/pray-schedule/pkpu/model"
+	utils2 "fatalisa-public-api/service/web/utils"
 	"fatalisa-public-api/utils"
 	"github.com/subchen/go-log"
 	"io"
@@ -26,8 +27,8 @@ var downloadTask = 0
 var downloadGroup = sync.WaitGroup{}
 var yearSchedule string
 
-// PrayScheduleDownload used in cronjob for downloading all cities schedule
-func PrayScheduleDownload() {
+// PrayScheduleDownloadPKPU used in cronjob for downloading all cities schedule
+func PrayScheduleDownloadPKPU() {
 	log.Infof("%s %v", "Downloading pray schedule at", time.Now())
 	for i := 1; i <= totalSchedules; i++ {
 		downloadTask++
@@ -83,8 +84,7 @@ func GetDataPkpu(cityCode int) *http.Response {
 
 	// Download
 	res, err := client.Post(url, contentType, bytes.NewBuffer([]byte(body)))
-	if err != nil {
-		log.Error(err)
+	if err, _ := utils2.ErrorHandler(err); err {
 		return nil
 	}
 	return res

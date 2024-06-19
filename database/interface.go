@@ -21,8 +21,8 @@ type MongoDBInterface interface {
 }
 
 type RedisInterface interface {
-	Get(key string) string
-	Set(key string, value string) bool
+	GetString(key string) string
+	SetString(key string, value string) bool
 	PushQueue(key string, v interface{})
 	PopQueue(key string, v interface{})
 }

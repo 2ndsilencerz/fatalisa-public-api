@@ -67,13 +67,12 @@ func (router *Config) InitRoutes() {
 //func increaseAccessCounter() {
 //	redis := config.InitRedis()
 //	if len(redis.Client.Ping(context.Background()).Err().Error()) == 0 {
-//		val := redis.Get(accessCounterKey)
+//		val := redis.GetString(accessCounterKey)
 //		currentValue, err := strconv.Atoi(val)
-//		if err != nil {
-//			log.Error(err)
+//		if err, _ := utils2.ErrorHandler(err); err {
 //			currentValue = 0
 //		}
 //		currentValue++
-//		redis.Set(accessCounterKey, strconv.Itoa(currentValue))
+//		redis.SetString(accessCounterKey, strconv.Itoa(currentValue))
 //	}
 //}

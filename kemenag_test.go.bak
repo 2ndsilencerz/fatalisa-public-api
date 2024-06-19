@@ -49,13 +49,15 @@ func TestGetSchedule(t *testing.T) {
 	}
 	var thisMonth, thisYear int
 	thisMonth, err = strconv.Atoi(time.Now().Format("01"))
-	if err != nil {
-		t.Error(err)
-	}
+	if err, _ := utils2.ErrorHandler(err); err {
+        t.Error()
+        return
+    }
 	thisYear, err = strconv.Atoi(time.Now().Format("2006"))
-	if err != nil {
-		t.Error(err)
-	}
+	if err, _ := utils2.ErrorHandler(err); err {
+        t.Error()
+        return
+    }
 	log.Info(provinceTestKemenag + " " + cityTestKemenag + " " + string(resCities[cityTestKemenag]) + " " +
 		fmt.Sprint(thisMonth) + " " + fmt.Sprint(thisYear))
 	resSchedule := kemenag.GetSchedule(string(resProvinces[provinceTestKemenag]), string(resCities[cityTestKemenag]),

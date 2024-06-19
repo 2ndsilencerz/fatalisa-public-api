@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	utils2 "fatalisa-public-api/service/web/utils"
 	"github.com/subchen/go-log"
 	"os"
 )
@@ -40,17 +41,14 @@ func CheckAndCreateDir(path string) {
 func Mkdir(location string) {
 	log.Info("Creating dir ", location)
 	err := os.Mkdir(location, os.ModePerm)
-	if err != nil {
-		log.Error(err)
-	}
+	utils2.ErrorHandler(err)
 }
 
 // CreateFile used to create file without cumbersome error handling
 func CreateFile(location string) *os.File {
 	log.Info("Creating file ", location)
 	file, errFileCreate := os.Create(location)
-	if errFileCreate != nil {
-		log.Error("Create file error: ", errFileCreate)
+	if err, _ := utils2.ErrorHandler(errFileCreate); err {
 		return nil
 	}
 	return file
@@ -58,8 +56,6 @@ func CreateFile(location string) *os.File {
 
 func GetWorkingDir() string {
 	workDir, err := os.Getwd()
-	if err != nil {
-		log.Error(err)
-	}
+	utils2.ErrorHandler(err)
 	return workDir + "/"
 }
