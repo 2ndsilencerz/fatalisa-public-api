@@ -11,6 +11,7 @@ import (
 	"github.com/subchen/go-log"
 	"golang.org/x/net/html"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -90,6 +91,11 @@ func GetSchedule(req *model.Request, ctx context.Context) *model.Response {
 	dateReq, err := time.Parse("2006/01/02", req.Date)
 	if err, _ := utils2.ErrorHandler(err); err {
 		return &res
+	}
+
+	if strings.Contains(req.City, "%") {
+		req.City, err = url.QueryUnescape(req.City)
+		utils2.ErrorHandler(err)
 	}
 
 	if len(redis.GetKeys(cityRedisKey+"*", ctx)) == 0 {
