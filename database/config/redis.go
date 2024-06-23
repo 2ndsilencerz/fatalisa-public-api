@@ -213,6 +213,18 @@ func (conf *RedisConf) GetKeys(pattern string, ctx context.Context) map[string]s
 	return result
 }
 
+func (conf *RedisConf) Delete(key string, ctx context.Context) bool {
+	rdb := InitRedis()
+	if rdb.connected(ctx) {
+		err := rdb.Client.Del(ctx, key).Err()
+		if err, _ := utils2.ErrorHandler(err); !err {
+			return true
+		}
+		return false
+	}
+	return false
+}
+
 func (conf *RedisConf) connected(ctx context.Context) bool {
 	if len(conf.Host) > 0 {
 		if err, _ := utils2.ErrorHandler(conf.Client.Ping(ctx).Err()); !err {
