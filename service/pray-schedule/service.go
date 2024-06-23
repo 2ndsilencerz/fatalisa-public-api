@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	ProviderPkpu            = "PKPU"
-	ProviderKemenag         = "Kemenag"
-	ProviderJadwalShalatOrg = "JadwalShalatOrg"
+	ProviderPkpu    = "PKPU"
+	ProviderKemenag = "Kemenag"
+	//ProviderJadwalShalatOrg = "JadwalShalatOrg"
 )
 
 var provider string
@@ -34,12 +34,12 @@ func GetSchedule(c *fiber.Ctx) *model.Response {
 	log.Info(utils.Jsonify(req))
 
 	var res *model.Response
-	if provider == ProviderJadwalShalatOrg {
-		res = jadwalsholatorg.GetSchedule(&req, c.Context())
-	} else if provider == ProviderPkpu {
+	if provider == ProviderPkpu {
 		res = pkpu.GetData(&req)
-	} else {
+	} else if provider == ProviderKemenag {
 		res = kemenag.GetData(&req)
+	} else {
+		res = jadwalsholatorg.GetSchedule(&req, c.Context())
 	}
 	log.Info(utils.Jsonify(res))
 	return res
@@ -47,12 +47,12 @@ func GetSchedule(c *fiber.Ctx) *model.Response {
 
 func GetCityList(c *fiber.Ctx) interface{} {
 	var res interface{}
-	if provider == ProviderJadwalShalatOrg {
-		res = jadwalsholatorg.GetCityList(c.Context())
+	if provider == ProviderPkpu {
+		res = pkpu.GetCityList()
 	} else if provider == ProviderKemenag {
 		res = kemenag.GetCityList()
 	} else {
-		res = pkpu.GetCityList()
+		res = jadwalsholatorg.GetCityList(c.Context())
 	}
 	return res
 }

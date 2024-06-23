@@ -7,6 +7,7 @@ import (
 	utils2 "fatalisa-public-api/service/web/utils"
 	"fatalisa-public-api/utils"
 	"github.com/go-redis/redis/v8"
+	"github.com/subchen/go-log"
 	"os"
 	"time"
 )
@@ -35,6 +36,9 @@ func InitRedis() *RedisConf {
 				DB:       0,
 			})
 			redisCfg.Client = rdb
+		}
+		if redisCfg.connected(context.Background()) {
+			log.Warn("Redis not connected")
 		}
 	}
 	return redisCfg

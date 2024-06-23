@@ -51,6 +51,7 @@ func GetCityList(ctx context.Context) model.CityList {
 		},
 	}
 
+	log.Info(monthlyUrl)
 	resSchedule, err := client.Get(monthlyUrl)
 	if err, _ := utils2.ErrorHandler(err); err {
 		return res
@@ -93,12 +94,14 @@ func GetSchedule(req *model.Request, ctx context.Context) *model.Response {
 
 	if len(redis.GetKeys(cityRedisKey+"*", ctx)) == 0 {
 		GetCityList(ctx)
+		log.Info("City Code reinstated")
 	}
 
 	if strings.EqualFold(req.Date, today) {
 		log.Info("Checking cache for today's schedule")
 		//log.Info(scheduleRedisKey + req.City)
-		scheduleCityToday := redis.Get(scheduleRedisKey+req.City, ctx)
+		redisScheduleKey := scheduleRedisKey + req.City
+		scheduleCityToday := redis.Get(redisScheduleKey, ctx)
 		if scheduleCityToday != nil {
 			scheduleMap := make(map[string]string)
 			if err, _ := utils2.ErrorHandler(json.Unmarshal([]byte(fmt.Sprint(scheduleCityToday)), &scheduleMap)); !err {
@@ -106,8 +109,9 @@ func GetSchedule(req *model.Request, ctx context.Context) *model.Response {
 				res.Year = strconv.Itoa(dateReq.Year())
 				res.Month = strconv.Itoa(int(dateReq.Month()))
 				res.Date = strconv.Itoa(dateReq.Day())
+				res.City = req.City
 
-				res.Syuruq = fmt.Sprint(scheduleMap[timeList[0]])
+				res.Fajr = fmt.Sprint(scheduleMap[timeList[0]])
 				res.Dzuhur = fmt.Sprint(scheduleMap[timeList[1]])
 				res.Ashr = fmt.Sprint(scheduleMap[timeList[2]])
 				res.Maghrib = fmt.Sprint(scheduleMap[timeList[3]])
@@ -118,9 +122,13 @@ func GetSchedule(req *model.Request, ctx context.Context) *model.Response {
 		log.Warn("Failed to get today's schedule from cache")
 	}
 
-	cityCode := fmt.Sprint(redis.Get(cityRedisKey+req.City, ctx))
-	if len(cityCode) == 0 {
-		log.Warn("City Code not found in cache, will default search to Jakarta Pusat")
+	var cityCode string
+	cityCodeKey := cityRedisKey + req.City
+	if redisCityCode := redis.Get(cityCodeKey, ctx); redisCityCode == nil {
+		log.Warn("City Code not found in cache")
+		return &res
+	} else {
+		cityCode = fmt.Sprint(redisCityCode)
 	}
 
 	client := http.Client{
@@ -142,7 +150,6 @@ func GetSchedule(req *model.Request, ctx context.Context) *model.Response {
 	if err, _ := utils2.ErrorHandler(err); err {
 		return nil
 	}
-	log.Info(doc)
 
 	var extractData func(*html.Node)
 	extractData = func(n *html.Node) {
@@ -163,17 +170,16 @@ func GetSchedule(req *model.Request, ctx context.Context) *model.Response {
 				scheduleList[timeList[2]] = asharNode.FirstChild.Data
 				scheduleList[timeList[3]] = maghribNode.FirstChild.Data
 				scheduleList[timeList[4]] = isyaNode.FirstChild.Data
-				//log.Info(fmt.Sprint(scheduleList))
+
 				jsonMap := utils.Jsonify(scheduleList)
-				//if err, _ := utils2.ErrorHandler(err); !err {
 				redis.Set(scheduleRedisKey+req.City, jsonMap, ctx, 0)
-				//}
 
 				res.Year = strconv.Itoa(dateReq.Year())
 				res.Month = strconv.Itoa(int(dateReq.Month()))
 				res.Date = strconv.Itoa(dateReq.Day())
+				res.City = req.City
 
-				res.Syuruq = scheduleList[timeList[0]]
+				res.Fajr = scheduleList[timeList[0]]
 				res.Dzuhur = scheduleList[timeList[1]]
 				res.Ashr = scheduleList[timeList[2]]
 				res.Maghrib = scheduleList[timeList[3]]

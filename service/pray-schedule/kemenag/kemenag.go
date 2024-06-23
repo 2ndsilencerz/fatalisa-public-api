@@ -207,7 +207,7 @@ func GetData(req *model.Request) *model.Response {
 	responseData.Year = fmt.Sprint(year)
 	responseData.Month = fmt.Sprintf("%02d", month)
 	responseData.Date = fmt.Sprintf("%02d", dateRequested.Day())
-	responseData.Syuruq = dailyData.Subuh
+	responseData.Fajr = dailyData.Subuh
 	responseData.Dzuhur = dailyData.Dzuhur
 	responseData.Ashr = dailyData.Ashar
 	responseData.Maghrib = dailyData.Maghrib

@@ -5,6 +5,7 @@ import (
 	"fatalisa-public-api/service/pray-schedule/jadwalsholatorg"
 	"fatalisa-public-api/service/pray-schedule/model"
 	"github.com/subchen/go-log"
+	"strings"
 	"testing"
 	"time"
 )
@@ -20,12 +21,12 @@ func TestGetCityList(t *testing.T) {
 
 func TestGetSchedule(t *testing.T) {
 	req := model.Request{}
-	req.City = "Aceh Barat"
+	city := "Aceh Barat"
+	req.City = city
 	req.Date = time.Now().Format("2006/01/02")
 	resSchedule := jadwalsholatorg.GetSchedule(&req, context.Background())
-	log.Info(resSchedule)
 
-	if resSchedule.Syuruq == "" {
+	if resSchedule.Fajr == "" || !strings.EqualFold(resSchedule.City, city) {
 		t.Fail()
 	}
 }
